@@ -8,10 +8,10 @@ Capabilities:
   • Real-time stock data via yfinance (falls back to deterministic mock)
   • LuminarkTrajectoryState: session-level stage_velocity, risk_momentum,
     rigidity_index, recovery_index across the full session
-  • Yunus Protocol: ARROGANCE_SCANNER + FALSE_LIGHT_DETECTION + COMPASSIONATE_CONTAINMENT
-  • Harrowing Protocol: LAST_STABLE_SNAPSHOT + SHADOW_RETRIEVAL + QUARANTINE_MODE
-  • InfraAdaptiveCamouflage: 60% reroute from Stage 0-2 holdings to healthy ones
-  • InfraIsolateAndRegenerate: quarantine + regeneration suggestions
+  • Discipline Protocol: HUBRIS_SCANNER + FALSE_BREAKOUT_DETECTION + CONTROLLED_EXPOSURE_REDUCTION
+  • Drawdown Recovery Protocol: LAST_HEALTHY_BASELINE + BASELINE_RECOVERY_SEQUENCE + CIRCUIT_BREAKER_MODE
+  • Adaptive Rebalancer: 60% reroute from Stage 0-2 holdings to healthy ones
+  • Stop-Loss & Replace Protocol: position quarantine + regeneration suggestions
   • CITI: Systemic Tumbling Alert across portfolio + behavioral domains
   • PortfolioAnalyzer: 7-metric trader behavioral stage assessment
   • Serves the React frontend from /static/index.html
@@ -40,10 +40,10 @@ except ImportError:
 #  SAP FRAMEWORK CONSTANTS
 # ═══════════════════════════════════════════════════════════════════════════════
 SAP_LABELS: Dict[int, str] = {
-    0: "System Collapse",   1: "Critical Failure",  2: "Crisis",
-    3: "Struggle",          4: "Transition",         5: "Equilibrium",
-    6: "Growth",            7: "Peak Performance",   8: "Brittle Peak",
-    9: "Transcendence",
+    0: "Total Loss",        1: "Critical Risk",     2: "Active Decline",
+    3: "Stress Zone",       4: "Inflection Point",  5: "Neutral Zone",
+    6: "Bullish Trend",     7: "High Alpha",        8: "Overextended",
+    9: "Elite Alpha",
 }
 SAP_COLORS: Dict[int, str] = {
     0: "#dc2626", 1: "#ef4444", 2: "#f97316",
@@ -51,22 +51,22 @@ SAP_COLORS: Dict[int, str] = {
     6: "#16a34a", 7: "#3b82f6", 8: "#a855f7",  9: "#f59e0b",
 }
 SAP_DESCRIPTIONS: Dict[int, str] = {
-    0: "Complete collapse. Emergency action required immediately.",
-    1: "Critical failure. Multiple positions at severe risk.",
-    2: "Crisis state. Severe drawdown with no clear recovery path.",
-    3: "Struggling to stabilize. High stress across positions.",
-    4: "In transition. Volatility high but adaptive capacity present.",
-    5: "Equilibrium. Balanced risk/reward, holding steady.",
-    6: "Growth phase. Positive momentum building across positions.",
-    7: "Peak performance. Strong coherence and high adaptability.",
-    8: "Brittle Peak. Appears strong — FALSE LIGHT risk. TrapScore elevated.",
-    9: "Transcendent performance. Rare, sustained, exceptional.",
+    0: "Total loss. Emergency liquidation or portfolio wipeout. Immediate action required.",
+    1: "Critical risk. Multiple positions in severe drawdown with no stabilization.",
+    2: "Active decline. Sustained losses with no clear recovery signal.",
+    3: "Stress zone. High volatility pressure across positions, coherence breaking down.",
+    4: "Inflection point. Volatility elevated but recovery capacity is present.",
+    5: "Neutral zone. Balanced risk/reward ratio. Holding steady.",
+    6: "Bullish trend. Positive price momentum building across positions.",
+    7: "High Alpha. Strong trend consistency and high resilience — performing well.",
+    8: "Overextended. Surface metrics appear strong — FALSE BREAKOUT risk. Fragility Index elevated.",
+    9: "Elite Alpha. Rare, sustained, exceptional multi-position performance.",
 }
 TRADER_ARCHETYPES: Dict[int, str] = {
-    0: "The Frozen",       1: "The Panicked",      2: "The Distressed",
-    3: "The Reactive",     4: "The Seeker",         5: "The Balanced",
-    6: "The Builder",      7: "The Master",         8: "The Overconfident",
-    9: "The Legend",
+    0: "The Paralyzed",        1: "The Panic Seller",      2: "The Distressed Trader",
+    3: "The Trigger Trader",   4: "The Student Trader",    5: "The Disciplined Trader",
+    6: "The Position Builder", 7: "The Tactical Trader",   8: "The Overleveraged",
+    9: "The Alpha Trader",
 }
 
 YUNUS_ARROGANCE_MARKERS = [
@@ -78,9 +78,9 @@ YUNUS_ARROGANCE_MARKERS = [
     "risk free", "no way it drops", "easy money", "obvious buy",
 ]
 
-REROUTE_FRACTION = 0.60       # InfraAdaptiveCamouflage
-REGEN_HEALTH_BOOST = 65.0     # InfraIsolateAndRegenerate
-READMIT_THRESHOLD  = 70.0
+REROUTE_FRACTION = 0.60       # Adaptive Rebalancer — reroute fraction
+REGEN_HEALTH_BOOST = 65.0     # Stop-Loss & Replace — regenerated position initial score
+READMIT_THRESHOLD  = 70.0     # Stop-Loss & Replace — readmission threshold
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  REQUEST / RESPONSE MODELS
@@ -103,15 +103,37 @@ class AnalyzeRequest(BaseModel):
     holdings:      List[HoldingInput]
     user_behavior: Optional[UserBehavior] = None
 
-class YunusScanRequest(BaseModel):
+class DisciplineScanRequest(BaseModel):
     text:      str
     stage:     int   = Field(5,   ge=0, le=9)
     coherence: float = Field(5.0, ge=0, le=10)
+
+# Alias for backwards compatibility
+YunusScanRequest = DisciplineScanRequest
 
 class AddHoldingRequest(BaseModel):
     ticker:   str
     shares:   float = Field(10.0, gt=0)
     avg_cost: float = Field(0.0,  ge=0)
+
+# ── Compliance / Overwatch Models ─────────────────────────────────────────────
+class ComplianceRuleCreate(BaseModel):
+    name:        str   = Field(..., description="Rule name, e.g. 'Max Drawdown'")
+    metric:      str   = Field(..., description="portfolio_stage | fragility_index | pnl_pct | concentration | leverage | drawdown | stage_8_count | stage_0_1_count")
+    operator:    str   = Field(..., description="lt | gt | lte | gte")
+    threshold:   float = Field(..., description="Numeric threshold value")
+    severity:    str   = Field("WARNING", description="INFO | WARNING | CRITICAL")
+    enabled:     bool  = Field(True)
+
+class PlatformRegister(BaseModel):
+    name:         str  = Field(..., description="Platform display name, e.g. 'TD Ameritrade Account'")
+    platform_type: str = Field("broker", description="broker | prop_firm | fund | personal")
+    description:  str  = Field("", description="Optional notes")
+
+class ComplianceCheckRequest(BaseModel):
+    platform_id:    Optional[str] = Field(None, description="Platform ID to tag the check to")
+    holdings:       List[HoldingInput]
+    user_behavior:  Optional[UserBehavior] = None
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SESSION TRAJECTORY STATE
@@ -126,29 +148,35 @@ class PortfolioSnapshot:
     stability:         float
 
 class SessionTrajectory:
-    """LuminarkTrajectoryState for the portfolio domain."""
+    """Position Trajectory Tracker — session-level momentum and recovery metrics."""
 
     def __init__(self) -> None:
-        self.snapshots:       List[PortfolioSnapshot] = []
-        self.last_stable:     Optional[PortfolioSnapshot] = None
-        self.harrowing_active: bool = False
+        self.snapshots:            List[PortfolioSnapshot] = []
+        self.last_stable:          Optional[PortfolioSnapshot] = None
+        self.drawdown_alert_active: bool = False
+
+    @property
+    def harrowing_active(self) -> bool:
+        """Backwards-compatible alias for drawdown_alert_active."""
+        return self.drawdown_alert_active
 
     def record(self, snap: PortfolioSnapshot) -> None:
         self.snapshots.append(snap)
-        # Auto-preserve last stable snapshot (Stage 4-6, TrapScore < 0.5)
+        # Auto-lock last healthy baseline (Stage 4-6, Fragility Index < 0.5)
         if 4 <= snap.portfolio_stage <= 6 and snap.trap_score < 0.5:
             self.last_stable = snap
-        self.harrowing_active = snap.trap_score > 0.80 or snap.portfolio_stage <= 2
+        self.drawdown_alert_active = snap.trap_score > 0.80 or snap.portfolio_stage <= 2
 
     def get_metrics(self) -> Dict:
         n = len(self.snapshots)
         base = {
-            "sample_count":      n,
-            "harrowing_active":  self.harrowing_active,
-            "last_stable_stage": self.last_stable.portfolio_stage if self.last_stable else None,
-            "last_stable_at":    (datetime.fromtimestamp(self.last_stable.timestamp)
-                                  .strftime("%Y-%m-%d %H:%M")
-                                  if self.last_stable else None),
+            "sample_count":       n,
+            "harrowing_active":   self.drawdown_alert_active,   # legacy key
+            "drawdown_alert":     self.drawdown_alert_active,
+            "last_stable_stage":  self.last_stable.portfolio_stage if self.last_stable else None,
+            "last_stable_at":     (datetime.fromtimestamp(self.last_stable.timestamp)
+                                   .strftime("%Y-%m-%d %H:%M")
+                                   if self.last_stable else None),
         }
         if n < 2:
             base.update({"stage_velocity": 0.0, "risk_momentum": 0.0,
@@ -286,13 +314,17 @@ class AnubisEngine:
                 stage = min(stage, 8)
         return stage, round(trap, 3)
 
-    # ── False Light detection ─────────────────────────────────────────────────
-    def detect_false_light(self, stage: int, dims: Dict, trap_score: float) -> bool:
+    # ── False Breakout detection (formerly False Light) ───────────────────────
+    def detect_false_breakout(self, stage: int, dims: Dict, trap_score: float) -> bool:
+        """Detects deceptive rally or overextension masking imminent reversal."""
         if stage >= 8 and dims["coherence"] < 3.0:
             return True
         if stage >= 7 and trap_score > 0.72:
             return True
         return False
+
+    # Backwards-compatible alias
+    detect_false_light = detect_false_breakout
 
     # ── Full holding assessment ───────────────────────────────────────────────
     def assess_holding(self, h: HoldingInput) -> Dict:
@@ -307,7 +339,7 @@ class AnubisEngine:
             trap_score += max(0, dims["tension"] - 5) / 20
         trap_score = round(min(1.0, trap_score), 3)
 
-        false_light       = self.detect_false_light(stage, dims, trap_score)
+        false_light       = self.detect_false_breakout(stage, dims, trap_score)
         reroute_suggested = stage <= 2
         reroute_pct       = int(REROUTE_FRACTION * 100) if reroute_suggested else 0
 
@@ -317,15 +349,15 @@ class AnubisEngine:
         pnl   = round((cur - cost) / cost * 100, 2)
 
         if false_light:
-            desc = (f"⚠️ FALSE LIGHT — Stage {stage} surface stability is deceptive. "
-                    "Coherence collapse risk. Recommend re-evaluation at Stage 5.")
+            desc = (f"⚠️ FALSE BREAKOUT — Stage {stage} price action appears strong but "
+                    "trend consistency is collapsing. Recommend re-evaluation at Stage 5.")
         elif stage <= 2:
             desc = (f"🔴 CRITICAL — {SAP_DESCRIPTIONS[stage]} "
-                    f"InfraAdaptiveCamouflage recommends rerouting {reroute_pct}% "
-                    "to healthier positions.")
+                    f"Adaptive Rebalancer recommends rerouting {reroute_pct}% "
+                    "to higher-stage positions.")
         elif stage == 8:
-            desc = (f"⚡ BRITTLE PEAK — TrapScore {trap_score:.2f}. "
-                    "High coherence masking brittleness. Monitor closely.")
+            desc = (f"⚡ OVEREXTENDED — Fragility Index {trap_score:.2f}. "
+                    "Surface rally masking overextension. Circuit Breaker risk if trend reverses.")
         else:
             desc = SAP_DESCRIPTIONS[stage]
 
@@ -383,17 +415,17 @@ class AnubisEngine:
         trap_risk  = trap_score > 0.50 or stage == 8
 
         if false_light_risk := (stage >= 8 and coher < 3.0):
-            desc = (f"⚠️ FALSE LIGHT — Trader at Stage {stage} showing brittle "
-                    "overconfidence patterns. Humility intervention recommended.")
+            desc = (f"⚠️ FALSE BREAKOUT — Trader at Stage {stage} displaying overextension "
+                    "patterns. Fragility Index elevated. Controlled Exposure Reduction recommended.")
         elif trap_risk:
             desc = (f"Behavioral stage {stage} — {archetype}. "
-                    f"TrapScore {trap_score:.2f}. Review risk management discipline.")
+                    f"Fragility Index {trap_score:.2f}. Overextension trap risk. Review position sizing and leverage.")
         elif stage >= 6:
             desc = (f"Behavioral stage {stage} — {archetype}. "
-                    "Disciplined execution with healthy risk management.")
+                    "Disciplined execution with solid risk management ratios.")
         else:
             desc = (f"Behavioral stage {stage} — {archetype}. "
-                    "Room for improvement in key behavioral metrics.")
+                    "Key behavioral metrics indicate room for trading discipline improvement.")
 
         return {
             "user_stage":    stage,
@@ -408,45 +440,48 @@ class AnubisEngine:
             "dimensions":    dims,
         }
 
-    # ── Yunus Protocol ────────────────────────────────────────────────────────
+    # ── Discipline Protocol (Hubris Scanner) ─────────────────────────────────
     def yunus_scan(self, text: str, stage: int = 5, coherence: float = 5.0) -> Dict:
+        """Discipline Protocol: HUBRIS_SCANNER + FALSE_BREAKOUT_DETECTION + CONTROLLED_EXPOSURE_REDUCTION."""
         tl = text.lower()
         detected = [m for m in YUNUS_ARROGANCE_MARKERS if m in tl]
 
         score = max(0, 100 - len(detected) * 14)
         flags = []
         if len(detected) >= 2:
-            flags.append("YUNUS_STAGE8_TRAP")
+            flags.append("OVEREXTENSION_TRAP")
         if any(m in tl for m in ["no risk", "can't lose", "100% profit", "risk free"]):
-            flags.append("YUNUS_NO_WORST_CASE")
+            flags.append("MISSING_DOWNSIDE_SCENARIO")
 
-        # False Light check
-        false_light = stage >= 8 and coherence < 3.0
-        if false_light:
-            flags.append("FALSE_LIGHT_DETECTED")
+        # False Breakout check (formerly False Light)
+        false_breakout = stage >= 8 and coherence < 3.0
+        if false_breakout:
+            flags.append("FALSE_BREAKOUT_DETECTED")
             score = min(score, 35)
 
-        output_safe = score >= 70 and not false_light
+        output_safe = score >= 70 and not false_breakout
 
-        if false_light:
-            rec = ("FALSE LIGHT DETECTED: Collapse stage assessment to Stage 5. "
-                   "Surface confidence is not supported by underlying coherence.")
-        elif "YUNUS_STAGE8_TRAP" in flags:
-            rec = (f"COMPASSIONATE CONTAINMENT: Reduce position sizes 30-40%. "
-                   f"Markers detected: {', '.join(detected[:3])}. "
-                   "Worst-case scenario has not been accounted for.")
+        if false_breakout:
+            rec = ("FALSE BREAKOUT DETECTED: Re-evaluate position at Stage 5. "
+                   "Surface price strength is not supported by underlying trend consistency.")
+        elif "OVEREXTENSION_TRAP" in flags:
+            rec = (f"CONTROLLED EXPOSURE REDUCTION: Reduce position sizes 30-40%. "
+                   f"Overconfidence markers detected: {', '.join(detected[:3])}. "
+                   "Downside scenario has not been accounted for.")
         elif detected:
-            rec = (f"Overconfidence signals found: {', '.join(detected[:2])}. "
+            rec = (f"Hubris signals detected: {', '.join(detected[:2])}. "
                    "Re-examine risk assumptions before executing.")
         else:
-            rec = "Epistemic humility maintained. Trading notes appear grounded."
+            rec = "Trading discipline maintained. Notes appear risk-aware and grounded."
 
         return {
             "output_safe":       output_safe,
-            "yunus_score":       round(score, 1),
+            "yunus_score":       round(score, 1),    # key kept for API compatibility
+            "discipline_score":  round(score, 1),    # preferred new key
             "detected_markers":  detected,
             "flags":             flags,
-            "false_light":       false_light,
+            "false_light":       false_breakout,     # legacy key
+            "false_breakout":    false_breakout,
             "recommendation":    rec,
         }
 
@@ -507,6 +542,210 @@ class AnubisEngine:
         }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+#  COMPLIANCE / OVERWATCH ENGINE
+# ═══════════════════════════════════════════════════════════════════════════════
+import uuid as _uuid
+
+_METRIC_DISPLAY = {
+    "portfolio_stage":  "Portfolio Stage",
+    "fragility_index":  "Fragility Index",
+    "pnl_pct":          "Portfolio P&L %",
+    "concentration":    "Top-3 Concentration",
+    "leverage":         "Leverage Ratio",
+    "drawdown":         "Max Drawdown %",
+    "stage_8_count":    "Stage-8 (Overextended) Count",
+    "stage_0_1_count":  "Stage-0/1 (Critical) Count",
+}
+
+class ComplianceEngine:
+    """
+    ANUBIS Compliance & Overwatch Layer — monitors registered trading platforms
+    against user-defined risk rules and generates a timestamped violation log.
+    """
+
+    def __init__(self) -> None:
+        self.rules:     List[Dict] = []
+        self.platforms: List[Dict] = []
+        self.alerts:    List[Dict] = []
+        self._seed_default_rules()
+
+    # ── Default built-in rules ────────────────────────────────────────────────
+    def _seed_default_rules(self) -> None:
+        defaults = [
+            {"name": "Min Portfolio Stage",      "metric": "portfolio_stage",  "operator": "gte", "threshold": 3.0,  "severity": "WARNING",  "enabled": True},
+            {"name": "Max Fragility Index",       "metric": "fragility_index",  "operator": "lte", "threshold": 0.75, "severity": "WARNING",  "enabled": True},
+            {"name": "Max Critical Holdings",     "metric": "stage_0_1_count",  "operator": "lte", "threshold": 1.0,  "severity": "CRITICAL", "enabled": True},
+            {"name": "Max Overextended Count",    "metric": "stage_8_count",    "operator": "lte", "threshold": 2.0,  "severity": "WARNING",  "enabled": True},
+            {"name": "Max Portfolio Drawdown",    "metric": "drawdown",         "operator": "gte", "threshold": -25.0,"severity": "CRITICAL", "enabled": True},
+            {"name": "Max Concentration (Top-3)", "metric": "concentration",    "operator": "lte", "threshold": 0.60, "severity": "WARNING",  "enabled": True},
+        ]
+        for d in defaults:
+            d["rule_id"] = str(_uuid.uuid4())[:8]
+            d["built_in"] = True
+            self.rules.append(d)
+
+    # ── Rule CRUD ─────────────────────────────────────────────────────────────
+    def add_rule(self, r: ComplianceRuleCreate) -> Dict:
+        rule = r.dict()
+        rule["rule_id"]  = str(_uuid.uuid4())[:8]
+        rule["built_in"] = False
+        self.rules.append(rule)
+        return rule
+
+    def delete_rule(self, rule_id: str) -> bool:
+        before = len(self.rules)
+        self.rules = [r for r in self.rules if r["rule_id"] != rule_id]
+        return len(self.rules) < before
+
+    def toggle_rule(self, rule_id: str) -> Optional[Dict]:
+        for r in self.rules:
+            if r["rule_id"] == rule_id:
+                r["enabled"] = not r["enabled"]
+                return r
+        return None
+
+    # ── Platform registry ─────────────────────────────────────────────────────
+    def register_platform(self, p: PlatformRegister) -> Dict:
+        plat = p.dict()
+        plat["platform_id"]    = str(_uuid.uuid4())[:8]
+        plat["registered_at"]  = datetime.utcnow().isoformat() + "Z"
+        plat["last_check"]     = None
+        plat["compliance_score"] = None
+        plat["status"]         = "pending"
+        self.platforms.append(plat)
+        return plat
+
+    def delete_platform(self, platform_id: str) -> bool:
+        before = len(self.platforms)
+        self.platforms = [p for p in self.platforms if p["platform_id"] != platform_id]
+        return len(self.platforms) < before
+
+    # ── Core compliance check ─────────────────────────────────────────────────
+    def _extract_metrics(self, holdings: List[Dict], pnl_pct: float,
+                         user: Optional[Dict] = None) -> Dict:
+        total_val         = sum(h["position_value"] for h in holdings) or 1
+        stage_0_1_count   = sum(1 for h in holdings if h["stage"] <= 1)
+        stage_8_count     = sum(1 for h in holdings if h["stage"] == 8)
+        top3_val          = sum(h["position_value"] for h in
+                               sorted(holdings, key=lambda x: -x["position_value"])[:3])
+        concentration     = round(top3_val / total_val, 4)
+        max_fragility     = max((h["trap_score"] for h in holdings), default=0.0)
+        portfolio_stage   = max(0, min(9, round(
+            sum(h["stage"] * h["position_value"] for h in holdings) / total_val
+        )))
+        # Worst individual pnl as drawdown proxy
+        drawdown_pct      = min((h["pnl_pct"] for h in holdings), default=0.0)
+
+        return {
+            "portfolio_stage": portfolio_stage,
+            "fragility_index": max_fragility,
+            "pnl_pct":         pnl_pct,
+            "concentration":   concentration,
+            "leverage":        user["dimensions"].get("tension", 5.0) / 5.0 if user else 1.0,
+            "drawdown":        drawdown_pct,
+            "stage_8_count":   stage_8_count,
+            "stage_0_1_count": stage_0_1_count,
+        }
+
+    def _eval_rule(self, rule: Dict, metrics: Dict) -> Optional[Dict]:
+        """Returns a violation dict if rule is triggered, else None."""
+        if not rule.get("enabled", True):
+            return None
+        metric    = rule["metric"]
+        operator  = rule["operator"]
+        threshold = rule["threshold"]
+        value     = metrics.get(metric)
+        if value is None:
+            return None
+        ops = {"lt": lambda a, b: a < b,  "gt":  lambda a, b: a > b,
+               "lte": lambda a, b: a <= b, "gte": lambda a, b: a >= b}
+        op_fn = ops.get(operator)
+        if not op_fn:
+            return None
+        # Rule PASSES when condition is met; VIOLATION when condition is NOT met
+        # e.g. "portfolio_stage gte 3" = portfolio_stage must be >= 3
+        if not op_fn(value, threshold):
+            op_display = {"lt": "<", "gt": ">", "lte": "≤", "gte": "≥"}.get(operator, operator)
+            return {
+                "rule_id":   rule["rule_id"],
+                "rule_name": rule["name"],
+                "metric":    _METRIC_DISPLAY.get(metric, metric),
+                "actual":    round(value, 3),
+                "required":  f"{op_display} {threshold}",
+                "severity":  rule["severity"],
+            }
+        return None
+
+    def run_check(self, holdings: List[Dict], pnl_pct: float,
+                  user: Optional[Dict], platform_id: Optional[str] = None) -> Dict:
+        metrics    = self._extract_metrics(holdings, pnl_pct, user)
+        violations = []
+        for rule in self.rules:
+            v = self._eval_rule(rule, metrics)
+            if v:
+                violations.append(v)
+
+        critical_count = sum(1 for v in violations if v["severity"] == "CRITICAL")
+        warning_count  = sum(1 for v in violations if v["severity"] == "WARNING")
+        total_rules    = sum(1 for r in self.rules if r.get("enabled", True))
+        passed         = total_rules - len(violations)
+        score          = round(max(0, 100 - critical_count * 25 - warning_count * 10), 1)
+
+        status = ("FAIL"    if critical_count > 0 else
+                  "CAUTION" if warning_count  > 0 else
+                  "PASS")
+        color  = {"PASS": "#22c55e", "CAUTION": "#eab308", "FAIL": "#dc2626"}.get(status)
+
+        result = {
+            "platform_id":     platform_id,
+            "timestamp":       datetime.utcnow().isoformat() + "Z",
+            "compliance_score": score,
+            "status":          status,
+            "status_color":    color,
+            "rules_checked":   total_rules,
+            "rules_passed":    passed,
+            "violations":      violations,
+            "critical_count":  critical_count,
+            "warning_count":   warning_count,
+            "metrics_snapshot": metrics,
+        }
+
+        # Record to alert log
+        if violations:
+            for v in violations:
+                alert = {**v,
+                    "alert_id":    str(_uuid.uuid4())[:8],
+                    "platform_id": platform_id,
+                    "timestamp":   result["timestamp"],
+                    "resolved":    False,
+                }
+                self.alerts.insert(0, alert)
+            # Keep last 200 alerts
+            self.alerts = self.alerts[:200]
+
+        # Update platform record
+        for p in self.platforms:
+            if p["platform_id"] == platform_id:
+                p["last_check"]       = result["timestamp"]
+                p["compliance_score"] = score
+                p["status"]           = status
+                break
+
+        return result
+
+    def clear_alerts(self) -> int:
+        n = len(self.alerts)
+        self.alerts = []
+        return n
+
+    def resolve_alert(self, alert_id: str) -> bool:
+        for a in self.alerts:
+            if a["alert_id"] == alert_id:
+                a["resolved"] = True
+                return True
+        return False
+
+# ═══════════════════════════════════════════════════════════════════════════════
 #  DEFAULT DEMO PORTFOLIO
 # ═══════════════════════════════════════════════════════════════════════════════
 DEMO_PORTFOLIO = [
@@ -522,12 +761,12 @@ DEMO_PORTFOLIO = [
 #  FASTAPI APP
 # ═══════════════════════════════════════════════════════════════════════════════
 app = FastAPI(
-    title="ANUBIS — LUMINARK Portfolio Intelligence",
+    title="ANUBIS — LUMINARK Portfolio Intelligence & Compliance",
     description=(
         "SAP 10-stage portfolio classification, trajectory tracking, "
-        "Yunus epistemic safety, and Harrowing recovery — powered by LUMINARK."
+        "Discipline Protocol, Drawdown Recovery, and Compliance/Overwatch monitoring layer — powered by LUMINARK."
     ),
-    version="2.0.0",
+    version="3.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
@@ -538,8 +777,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-engine  = AnubisEngine()
-session = SessionTrajectory()
+engine     = AnubisEngine()
+session    = SessionTrajectory()
+compliance = ComplianceEngine()
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
@@ -547,10 +787,13 @@ session = SessionTrajectory()
 async def health():
     return {
         "status":    "operational",
-        "version":   "2.0.0",
+        "version":   "3.0.0",
         "yfinance":  YFINANCE_AVAILABLE,
         "real_data": YFINANCE_AVAILABLE,
         "snapshots": len(session.snapshots),
+        "compliance_rules":    len(compliance.rules),
+        "compliance_platforms": len(compliance.platforms),
+        "compliance_alerts":   len(compliance.alerts),
     }
 
 @app.get("/api/portfolio/demo")
@@ -588,25 +831,26 @@ async def analyze(req: AnalyzeRequest):
     session.record(snap)
     trajectory = session.get_metrics()
 
-    # Harrowing Protocol
+    # Drawdown Recovery Protocol (formerly Harrowing Protocol)
     harrowing = {
-        "active":             session.harrowing_active,
+        "active":             session.drawdown_alert_active,
+        "drawdown_alert":     session.drawdown_alert_active,
         "last_stable_stage":  (session.last_stable.portfolio_stage
                                if session.last_stable else None),
         "last_stable_at":     (datetime.fromtimestamp(session.last_stable.timestamp)
                                .strftime("%Y-%m-%d %H:%M")
                                if session.last_stable else None),
         "restoration_action": (
-            f"SHADOW_RETRIEVAL: Restore toward Stage "
-            f"{session.last_stable.portfolio_stage} — reduce high-TrapScore positions "
-            "and increase allocation to Stage 5-6 holdings."
+            f"BASELINE RECOVERY SEQUENCE: Target Stage "
+            f"{session.last_stable.portfolio_stage} — reduce high-Fragility-Index positions "
+            "and reallocate toward Neutral Zone (Stage 5-6) holdings."
             if session.last_stable else
-            "No stable baseline recorded yet. Run multiple analyses to build one."
+            "No healthy baseline locked yet. Run multiple analyses to establish one."
         ),
         "quarantine_risk":    portfolio_trap > 0.90 or portfolio_stage <= 1,
         "mode": (
-            "QUARANTINE"  if portfolio_trap > 0.90 or portfolio_stage <= 1 else
-            "HARROWING"   if session.harrowing_active else
+            "CIRCUIT_BREAKER"   if portfolio_trap > 0.90 or portfolio_stage <= 1 else
+            "DRAWDOWN_ALERT"    if session.drawdown_alert_active else
             "NORMAL"
         ),
     }
@@ -616,16 +860,16 @@ async def analyze(req: AnalyzeRequest):
     for h in analyzed:
         if h["false_light"]:
             threats.append({"ticker": h["ticker"], "severity": "HIGH",
-                            "type": "FALSE_LIGHT",
-                            "description": f"FALSE LIGHT: Stage {h['stage']} — coherence collapse imminent"})
+                            "type": "FALSE_BREAKOUT",
+                            "description": f"FALSE BREAKOUT: Stage {h['stage']} — trend consistency collapsing beneath surface rally"})
         elif h["stage"] <= 2:
             threats.append({"ticker": h["ticker"], "severity": "CRITICAL",
-                            "type": "CRITICAL_STAGE",
-                            "description": f"Stage {h['stage']} — critical deterioration active"})
+                            "type": "CRITICAL_DECLINE",
+                            "description": f"Stage {h['stage']} — active decline, stop-loss review required"})
         elif h["trap_score"] > 0.65:
             threats.append({"ticker": h["ticker"], "severity": "MEDIUM",
-                            "type": "TRAP_RISK",
-                            "description": f"TrapScore {h['trap_score']:.2f} — brittle peak risk"})
+                            "type": "OVEREXTENSION_RISK",
+                            "description": f"Fragility Index {h['trap_score']:.2f} — overextension risk, position sizing review advised"})
 
     threats.sort(key=lambda t: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}.get(t["severity"], 3))
 
@@ -662,19 +906,154 @@ async def yunus_scan(req: YunusScanRequest):
 
 @app.get("/api/harrowing_status")
 async def harrowing_status():
+    """Drawdown Recovery Protocol status — last healthy baseline and recovery mode."""
     return {
-        "active":            session.harrowing_active,
-        "mode":              ("QUARANTINE" if
-                              session.snapshots and session.snapshots[-1].trap_score > 0.90
-                              else "HARROWING" if session.harrowing_active else "NORMAL"),
-        "last_stable_stage": (session.last_stable.portfolio_stage
-                              if session.last_stable else None),
-        "last_stable_at":    (datetime.fromtimestamp(session.last_stable.timestamp)
-                              .strftime("%Y-%m-%d %H:%M")
-                              if session.last_stable else None),
-        "snapshots_recorded": len(session.snapshots),
-        "quarantine_risk":    (session.snapshots[-1].trap_score > 0.90
-                               if session.snapshots else False),
+        "active":             session.drawdown_alert_active,
+        "drawdown_alert":     session.drawdown_alert_active,
+        "mode":               ("CIRCUIT_BREAKER"  if
+                               session.snapshots and session.snapshots[-1].trap_score > 0.90
+                               else "DRAWDOWN_ALERT" if session.drawdown_alert_active else "NORMAL"),
+        "last_stable_stage":  (session.last_stable.portfolio_stage
+                               if session.last_stable else None),
+        "last_stable_at":     (datetime.fromtimestamp(session.last_stable.timestamp)
+                               .strftime("%Y-%m-%d %H:%M")
+                               if session.last_stable else None),
+        "snapshots_recorded":  len(session.snapshots),
+        "circuit_breaker_risk": (session.snapshots[-1].trap_score > 0.90
+                                 if session.snapshots else False),
+    }
+
+# ── Compliance / Overwatch Routes ─────────────────────────────────────────────
+
+@app.get("/api/compliance/rules",
+         summary="List all compliance rules",
+         tags=["Compliance"])
+async def list_compliance_rules():
+    """Returns all active compliance rules including built-in defaults."""
+    return {"rules": compliance.rules, "count": len(compliance.rules)}
+
+@app.post("/api/compliance/rules",
+          summary="Add a compliance rule",
+          tags=["Compliance"])
+async def add_compliance_rule(rule: ComplianceRuleCreate):
+    """Create a custom compliance rule. Metric options: portfolio_stage, fragility_index,
+    pnl_pct, concentration, leverage, drawdown, stage_8_count, stage_0_1_count."""
+    new_rule = compliance.add_rule(rule)
+    return {"rule": new_rule, "message": f"Rule '{new_rule['name']}' added (ID: {new_rule['rule_id']})"}
+
+@app.delete("/api/compliance/rules/{rule_id}",
+            summary="Delete a compliance rule",
+            tags=["Compliance"])
+async def delete_compliance_rule(rule_id: str):
+    ok = compliance.delete_rule(rule_id)
+    if not ok:
+        raise HTTPException(404, f"Rule {rule_id} not found")
+    return {"deleted": rule_id}
+
+@app.post("/api/compliance/rules/{rule_id}/toggle",
+          summary="Enable/disable a compliance rule",
+          tags=["Compliance"])
+async def toggle_compliance_rule(rule_id: str):
+    rule = compliance.toggle_rule(rule_id)
+    if not rule:
+        raise HTTPException(404, f"Rule {rule_id} not found")
+    return {"rule": rule, "message": f"Rule {'enabled' if rule['enabled'] else 'disabled'}"}
+
+@app.get("/api/compliance/platforms",
+         summary="List registered monitoring platforms",
+         tags=["Compliance"])
+async def list_platforms():
+    """Returns all registered trading platforms being monitored."""
+    return {"platforms": compliance.platforms, "count": len(compliance.platforms)}
+
+@app.post("/api/compliance/platforms",
+          summary="Register a trading platform for monitoring",
+          tags=["Compliance"])
+async def register_platform(p: PlatformRegister):
+    """Register a trading platform (broker, prop firm, personal account, etc.) for compliance monitoring."""
+    plat = compliance.register_platform(p)
+    return {"platform": plat, "message": f"Platform '{plat['name']}' registered (ID: {plat['platform_id']})"}
+
+@app.delete("/api/compliance/platforms/{platform_id}",
+            summary="Remove a monitored platform",
+            tags=["Compliance"])
+async def delete_platform(platform_id: str):
+    ok = compliance.delete_platform(platform_id)
+    if not ok:
+        raise HTTPException(404, f"Platform {platform_id} not found")
+    return {"deleted": platform_id}
+
+@app.post("/api/compliance/check",
+          summary="Run a compliance check on a portfolio",
+          tags=["Compliance"])
+async def run_compliance_check(req: ComplianceCheckRequest):
+    """Submit a portfolio for compliance analysis against all enabled rules.
+    Optionally tag to a registered platform_id. Returns violations, score, and status."""
+    if not req.holdings:
+        raise HTTPException(400, "Provide at least one holding.")
+    analyzed    = [engine.assess_holding(h) for h in req.holdings]
+    total_val   = sum(h["position_value"] for h in analyzed) or 1
+    total_cost  = sum(h["avg_cost"] * h["shares"] for h in analyzed)
+    pnl_pct     = round((total_val - total_cost) / total_cost * 100, 2) if total_cost > 0 else 0.0
+    ub   = req.user_behavior or UserBehavior()
+    user = engine.assess_user(ub)
+    return compliance.run_check(analyzed, pnl_pct, user, req.platform_id)
+
+@app.get("/api/compliance/alerts",
+         summary="Get compliance violation alert log",
+         tags=["Compliance"])
+async def get_compliance_alerts(limit: int = 50, unresolved_only: bool = False):
+    """Returns the recent compliance violation alert log, newest first."""
+    alerts = compliance.alerts
+    if unresolved_only:
+        alerts = [a for a in alerts if not a.get("resolved")]
+    return {
+        "alerts":   alerts[:limit],
+        "total":    len(compliance.alerts),
+        "unresolved": sum(1 for a in compliance.alerts if not a.get("resolved")),
+    }
+
+@app.delete("/api/compliance/alerts",
+            summary="Clear all compliance alerts",
+            tags=["Compliance"])
+async def clear_compliance_alerts():
+    n = compliance.clear_alerts()
+    return {"message": f"Cleared {n} alerts"}
+
+@app.post("/api/compliance/alerts/{alert_id}/resolve",
+          summary="Mark an alert as resolved",
+          tags=["Compliance"])
+async def resolve_alert(alert_id: str):
+    ok = compliance.resolve_alert(alert_id)
+    if not ok:
+        raise HTTPException(404, f"Alert {alert_id} not found")
+    return {"resolved": alert_id}
+
+@app.get("/api/compliance/summary",
+         summary="Compliance dashboard summary",
+         tags=["Compliance"])
+async def compliance_summary():
+    """High-level compliance status across all platforms."""
+    total_platforms  = len(compliance.platforms)
+    passing          = sum(1 for p in compliance.platforms if p.get("status") == "PASS")
+    failing          = sum(1 for p in compliance.platforms if p.get("status") == "FAIL")
+    caution          = sum(1 for p in compliance.platforms if p.get("status") == "CAUTION")
+    unresolved_alerts = sum(1 for a in compliance.alerts if not a.get("resolved"))
+    avg_score        = (sum(p["compliance_score"] for p in compliance.platforms
+                           if p.get("compliance_score") is not None) / max(total_platforms, 1)
+                       if total_platforms > 0 else None)
+    return {
+        "total_platforms":   total_platforms,
+        "platforms_passing": passing,
+        "platforms_failing": failing,
+        "platforms_caution": caution,
+        "active_rules":      sum(1 for r in compliance.rules if r.get("enabled")),
+        "total_rules":       len(compliance.rules),
+        "unresolved_alerts": unresolved_alerts,
+        "avg_compliance_score": round(avg_score, 1) if avg_score is not None else None,
+        "overall_status": ("FAIL"    if failing > 0 else
+                           "CAUTION" if caution > 0 or unresolved_alerts > 0 else
+                           "PASS"    if total_platforms > 0 else "NO_PLATFORMS"),
     }
 
 # ── Serve frontend ─────────────────────────────────────────────────────────────

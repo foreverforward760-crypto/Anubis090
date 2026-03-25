@@ -111,7 +111,7 @@
   .traj-metric-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
   .traj-metric-val { font-size: 20px; font-weight: 800; margin-top: 2px; }
 
-  /* ── Yunus score ── */
+  /* ── Discipline score ── */
   .yunus-score-display { text-align: center; padding: 10px 0; }
   .yunus-number { font-size: 48px; font-weight: 900; line-height: 1; }
   .yunus-ring { position: relative; width: 100px; height: 100px; margin: 0 auto 10px; }
@@ -120,11 +120,11 @@
   .score-track { height: 8px; background: var(--border2); border-radius: 4px; overflow: hidden; margin-top: 8px; }
   .score-fill  { height: 100%; border-radius: 4px; transition: width .6s ease; }
 
-  /* ── Harrowing ── */
-  .harrowing-status { padding: 12px; border-radius: 8px; border: 1px solid; }
-  .harrowing-status.active   { background: rgba(239,68,68,.08); border-color: var(--red); }
-  .harrowing-status.normal   { background: rgba(34,197,94,.06); border-color: var(--green); }
-  .harrowing-status.quarantine { background: rgba(168,85,247,.1); border-color: var(--purple); }
+  /* ── Drawdown Recovery ── */
+  .drawdown-panel { padding: 12px; border-radius: 8px; border: 1px solid; }
+  .drawdown-panel.active   { background: rgba(239,68,68,.08); border-color: var(--red); }
+  .drawdown-panel.normal   { background: rgba(34,197,94,.06); border-color: var(--green); }
+  .drawdown-panel.quarantine { background: rgba(168,85,247,.1); border-color: var(--purple); }
 
   /* ── Systemic alert banner ── */
   .systemic-banner {
@@ -202,6 +202,38 @@
   /* ── PnL coloring ── */
   .pos { color: var(--green); }
   .neg { color: var(--red); }
+
+  /* ── Compliance / Overwatch ── */
+  .compliance-section { margin-top: 24px; }
+  .compliance-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .ctab { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); transition: all .2s; }
+  .ctab.active { background: rgba(6,182,212,.15); border-color: var(--accent); color: var(--accent); }
+  .compliance-score-ring { display: flex; align-items: center; gap: 16px; padding: 14px; background: var(--card2); border-radius: 10px; margin-bottom: 14px; }
+  .compliance-score-num { font-size: 42px; font-weight: 900; line-height: 1; }
+  .compliance-status-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; letter-spacing: .5px; }
+  .compliance-stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 8px; margin-bottom: 14px; }
+  .c-stat { background: var(--card2); border-radius: 8px; padding: 10px 12px; }
+  .c-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .c-stat-val { font-size: 18px; font-weight: 800; margin-top: 2px; }
+  .rule-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--card2); border-radius: 8px; margin-bottom: 6px; font-size: 12px; }
+  .rule-toggle { width: 32px; height: 18px; border-radius: 9px; border: none; cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0; }
+  .rule-name { flex: 1; font-weight: 600; }
+  .rule-metric { font-size: 10px; color: var(--muted); }
+  .rule-threshold { font-size: 10px; color: var(--accent); }
+  .rule-sev { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .platform-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--card2); border-radius: 8px; margin-bottom: 8px; }
+  .platform-name { flex: 1; font-weight: 600; font-size: 13px; }
+  .platform-type { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .platform-score { font-size: 18px; font-weight: 800; }
+  .platform-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .alert-row { padding: 9px 12px; background: var(--card2); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid; font-size: 12px; }
+  .alert-row.resolved { opacity: .45; }
+  .platform-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .input-full { background: var(--card2); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; padding: 8px 10px; font-size: 13px; width: 100%; }
+  .input-full:focus { outline: none; border-color: var(--accent); }
+  .violation-item { padding: 8px 12px; background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; margin-bottom: 6px; font-size: 12px; }
+  .viol-rule { font-weight: 700; }
+  .viol-detail { color: var(--muted); font-size: 11px; margin-top: 2px; }
 
   /* ── Behavior sliders ── */
   .behavior-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -282,10 +314,10 @@ function YunusRing({ score }) {
 // ── Dim Bars ──────────────────────────────────────────────────────────────────
 function DimBars({ dims }) {
   const entries = [
-    ['Adaptability', dims.adaptability, '#06b6d4'],
-    ['Coherence',    dims.coherence,    '#3b82f6'],
-    ['Stability',    dims.stability,    '#22c55e'],
-    ['Tension',      dims.tension,      '#ef4444'],
+    ['Resilience',       dims.adaptability, '#06b6d4'],
+    ['Trend Consistency', dims.coherence,    '#3b82f6'],
+    ['Position Stability',dims.stability,    '#22c55e'],
+    ['Stress Load',       dims.tension,      '#ef4444'],
   ];
   return (
     <div className="dim-bars">
@@ -305,7 +337,7 @@ function DimBars({ dims }) {
 // ── Holding Card ──────────────────────────────────────────────────────────────
 function HoldingCard({ h }) {
   const [expanded, setExpanded] = useState(false);
-  const cls = h.false_light ? 'holding-card false-light' : h.stage <= 2 ? 'holding-card critical' : 'holding-card';
+  const cls = h.false_breakout ? 'holding-card false-light' : h.stage <= 2 ? 'holding-card critical' : 'holding-card';
   return (
     <div className={cls} onClick={()=>setExpanded(e=>!e)}>
       <div className="holding-top">
@@ -313,7 +345,7 @@ function HoldingCard({ h }) {
         <div style={{flex:1}}>
           <div style={{display:'flex', alignItems:'center', gap:6}}>
             <span className="h-ticker">{h.ticker}</span>
-            {h.false_light && <span className="fl-badge">FALSE LIGHT</span>}
+            {h.false_breakout && <span className="fl-badge">FALSE BREAKOUT</span>}
             {h.reroute_suggested && <span className="fl-badge" style={{background:'#ef4444'}}>REROUTE</span>}
           </div>
           <div style={{fontSize:10, color:'#64748b'}}>{h.stage_label}</div>
@@ -331,7 +363,7 @@ function HoldingCard({ h }) {
 
       <div className="trap-bar">
         <span className="trap-label" style={{color: trapColor(h.trap_score)}}>
-          TrapScore {h.trap_score?.toFixed(2)}
+          Fragility Index {h.trap_score?.toFixed(2)}
         </span>
         <div className="trap-bar-track">
           <div className="trap-bar-fill"
@@ -376,7 +408,7 @@ function StageChart({ history, trapHistory }) {
             borderWidth:2, pointRadius:4, pointBackgroundColor:'#06b6d4', tension:.3, fill:true,
           },
           trapHistory?.length ? {
-            label:'TrapScore ×9', data:trapHistory.map(t=>t*9), borderColor:'#f97316',
+            label:'Fragility Index ×9', data:trapHistory.map(t=>t*9), borderColor:'#f97316',
             backgroundColor:'rgba(249,115,22,.04)', borderWidth:1.5,
             pointRadius:0, tension:.3, fill:false, borderDash:[4,4],
           } : null
@@ -408,9 +440,18 @@ function App() {
   const [yunusText,  setYunusText]  = useState('');
   const [yunusScan,  setYunusScan]  = useState(null);
   const [scanLoading,setScanLoading]= useState(false);
-  const [toast,      setToast]      = useState(null);
-  const [serverOk,   setServerOk]   = useState(null);
-  const [behavior,   setBehavior]   = useState({
+  const [toast,         setToast]         = useState(null);
+  const [serverOk,      setServerOk]      = useState(null);
+  // Compliance / Overwatch state
+  const [compResult,    setCompResult]    = useState(null);
+  const [compRules,     setCompRules]     = useState([]);
+  const [compPlatforms, setCompPlatforms] = useState([]);
+  const [compAlerts,    setCompAlerts]    = useState([]);
+  const [compTab,       setCompTab]       = useState('check');
+  const [compLoading,   setCompLoading]   = useState(false);
+  const [newPlatName,   setNewPlatName]   = useState('');
+  const [newPlatType,   setNewPlatType]   = useState('broker');
+  const [behavior,      setBehavior]      = useState({
     win_rate:.52, avg_hold_days:28, top3_concentration:.42,
     max_drawdown:.12, leverage_ratio:1.0, plan_override_count:1, portfolio_correlation:.45,
   });
@@ -474,6 +515,86 @@ function App() {
     finally { setScanLoading(false); }
   };
 
+  // ── Compliance functions ────────────────────────────────────────────────────
+  const loadComplianceData = useCallback(async () => {
+    try {
+      const [rules, plats, alerts] = await Promise.all([
+        API('/api/compliance/rules'),
+        API('/api/compliance/platforms'),
+        API('/api/compliance/alerts?limit=30'),
+      ]);
+      setCompRules(rules.rules || []);
+      setCompPlatforms(plats.platforms || []);
+      setCompAlerts(alerts.alerts || []);
+    } catch {}
+  }, []);
+
+  useEffect(() => { loadComplianceData(); }, []);
+
+  const runComplianceCheck = async () => {
+    if (!holdings.length) { showToast('Add holdings first.'); return; }
+    setCompLoading(true);
+    try {
+      const res = await API('/api/compliance/check', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          holdings: holdings.map(h=>({ticker:h.ticker, shares:parseFloat(h.shares)||10, avg_cost:parseFloat(h.avg_cost)||0})),
+          user_behavior: behavior,
+        }),
+      });
+      setCompResult(res);
+      await loadComplianceData();
+      showToast(`Compliance check complete — ${res.status}`);
+    } catch { showToast('Compliance check failed.'); }
+    finally { setCompLoading(false); }
+  };
+
+  const toggleRule = async (rule_id) => {
+    try {
+      await API(`/api/compliance/rules/${rule_id}/toggle`, {method:'POST'});
+      await loadComplianceData();
+    } catch {}
+  };
+
+  const registerPlatform = async () => {
+    if (!newPlatName.trim()) return;
+    try {
+      await API('/api/compliance/platforms', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name: newPlatName, platform_type: newPlatType, description:''}),
+      });
+      setNewPlatName(''); setNewPlatType('broker');
+      await loadComplianceData();
+      showToast('Platform registered ✓');
+    } catch { showToast('Failed to register platform.'); }
+  };
+
+  const deletePlatform = async (platform_id) => {
+    try {
+      await API(`/api/compliance/platforms/${platform_id}`, {method:'DELETE'});
+      await loadComplianceData();
+    } catch {}
+  };
+
+  const resolveAlert = async (alert_id) => {
+    try {
+      await API(`/api/compliance/alerts/${alert_id}/resolve`, {method:'POST'});
+      await loadComplianceData();
+    } catch {}
+  };
+
+  const clearAlerts = async () => {
+    try {
+      await API('/api/compliance/alerts', {method:'DELETE'});
+      setCompAlerts([]);
+      showToast('Alerts cleared ✓');
+    } catch {}
+  };
+
+  const compScoreColor = s => s == null ? 'var(--muted)' : s >= 80 ? 'var(--green)' : s >= 55 ? '#eab308' : 'var(--red)';
+  const sevColors = {CRITICAL:'#ef4444', WARNING:'#eab308', INFO:'#3b82f6'};
+
   const traj = analysis?.trajectory;
   const har  = analysis?.harrowing;
   const user = analysis?.user;
@@ -535,7 +656,7 @@ function App() {
             <div className={`ov-sub ${analysis.portfolio_pnl_pct>=0?'pos':'neg'}`}>{fmtp(analysis.portfolio_pnl_pct)} total P&L</div>
           </div>
           <div className="ov-card">
-            <div className="ov-label">TrapScore</div>
+            <div className="ov-label">Fragility Index</div>
             <div className="ov-value" style={{color:trapColor(analysis.overall_trap_score)}}>
               {(analysis.overall_trap_score*100).toFixed(0)}
             </div>
@@ -549,9 +670,9 @@ function App() {
             <div className="ov-sub">{traj?.sample_count} snapshots</div>
           </div>
           <div className="ov-card">
-            <div className="ov-label">Yunus Score</div>
+            <div className="ov-label">Discipline Score</div>
             <div className="ov-value" style={{color:yunusColor(user?.yunus_score||0)}}>{user?.yunus_score||'—'}</div>
-            <div className="ov-sub">Epistemic Humility</div>
+            <div className="ov-sub">Trading Discipline</div>
           </div>
           <div className="ov-card">
             <div className="ov-label">Trader Stage</div>
@@ -623,9 +744,9 @@ function App() {
           {analysis?.rebalance?.length > 0 && (
             <div className="section">
               <div className="card">
-                <div className="card-title">⚡ InfraAdaptiveCamouflage — Rebalance Suggestions</div>
+                <div className="card-title">⚡ Adaptive Rebalancer — Position Rerouting Suggestions</div>
                 <div style={{fontSize:11, color:'var(--muted)', marginBottom:10}}>
-                  Rerouting {60}% of critical positions to healthy holdings (LUMINARK protocol)
+                  Adaptive Rebalancer: rerouting {60}% from Stage 0-2 positions to higher-stage holdings
                 </div>
                 {analysis.rebalance.map((r,i)=>(
                   <div className="rebalance-row" key={i}>
@@ -644,16 +765,16 @@ function App() {
           {/* Yunus Scanner */}
           <div className="section">
             <div className="card">
-              <div className="card-title">🧠 Yunus Protocol — Epistemic Safety Scanner</div>
+              <div className="card-title">🛡️ Discipline Protocol — Hubris Scanner</div>
               <div style={{fontSize:11, color:'var(--muted)', marginBottom:10}}>
-                Paste your trading notes or rationale. ANUBIS will scan for overconfidence patterns and False Light signals.
+                Paste your trading notes or rationale. ANUBIS will scan for overconfidence patterns and False Breakout signals.
               </div>
               <textarea className="scanner-input"
                 placeholder="e.g. 'NVDA is a sure thing, can't lose here. Going all in…'"
                 value={yunusText} onChange={e=>setYunusText(e.target.value)}/>
               <div style={{display:'flex', justifyContent:'flex-end', marginTop:8}}>
                 <button className="btn btn-sm" onClick={runYunusScan} disabled={scanLoading||!yunusText.trim()}>
-                  {scanLoading ? <span className="spinner"/> : '🔍 Scan'}
+                  {scanLoading ? <span className="spinner"/> : '🔍 Scan Notes'}
                 </button>
               </div>
               {yunusScan && (
@@ -664,7 +785,7 @@ function App() {
                       <div style={{fontWeight:800, fontSize:15, color:yunusColor(yunusScan.yunus_score)}}>
                         {yunusScan.output_safe ? '✓ Output Safe' : '⚠ Output Flagged'}
                       </div>
-                      <div style={{fontSize:11, color:'var(--muted)', marginTop:2}}>Yunus Score {yunusScan.yunus_score}/100</div>
+                      <div style={{fontSize:11, color:'var(--muted)', marginTop:2}}>Discipline Score {yunusScan.yunus_score}/100</div>
                     </div>
                   </div>
                   {yunusScan.flags.map(f=>(
@@ -691,7 +812,7 @@ function App() {
 
           {/* Trajectory */}
           <div className="card">
-            <div className="card-title">📡 Trajectory Engine</div>
+            <div className="card-title">📡 Position Trajectory Tracker</div>
             {traj?.label ? (
               <>
                 <div className="traj-label" style={{color: TRAJ_COLORS[traj.label]}}>
@@ -717,14 +838,14 @@ function App() {
               </>
             ) : (
               <div style={{color:'var(--muted)', fontSize:12, padding:'10px 0'}}>
-                Run an analysis to begin trajectory tracking. Each analysis adds a snapshot to the session memory.
+                Run an analysis to begin trajectory tracking. Each analysis locks a data point into the Position Trajectory Tracker.
               </div>
             )}
           </div>
 
           {/* Trader Behavior */}
           <div className="card">
-            <div className="card-title">👤 Trader Behavior Profile</div>
+            <div className="card-title">👤 Trader Behavior Profiler</div>
             <div className="behavior-form">
               {[
                 ['Win Rate',       'win_rate',           0,1,   0.01],
@@ -762,7 +883,7 @@ function App() {
                 </div>
                 {user.trap_risk && (
                   <div style={{marginTop:8, fontSize:11, color:'var(--orange)', padding:'6px 8px', background:'rgba(249,115,22,.08)', borderRadius:6}}>
-                    ⚠ Stage 8 Trap risk detected — TrapScore {user.trap_score?.toFixed(2)}
+                    ⚠ Overextension Trap risk detected — Fragility Index {user.trap_score?.toFixed(2)}
                   </div>
                 )}
                 <div style={{fontSize:11, color:'var(--muted)', marginTop:8}}>{user.description}</div>
@@ -771,13 +892,13 @@ function App() {
             )}
           </div>
 
-          {/* Harrowing */}
+          {/* Drawdown Recovery */}
           <div className="card">
-            <div className="card-title">🏥 Harrowing Protocol</div>
+            <div className="card-title">📊 Drawdown Recovery Protocol</div>
             {har ? (
-              <div className={`harrowing-status ${har.quarantine_risk?'quarantine':har.active?'active':'normal'}`}>
+              <div className={`harrowing-status ${har.quarantine_risk?'quarantine':har.drawdown_alert ?? har.active?'active':'normal'}`}>
                 <div style={{fontWeight:800, fontSize:14}}>
-                  {har.quarantine_risk ? '🔴 QUARANTINE MODE' : har.active ? '⚠️ HARROWING ACTIVE' : '✅ NORMAL — Stable'}
+                  {har.quarantine_risk ? '🔴 CIRCUIT BREAKER' : har.drawdown_alert ?? har.active ? '⚠️ DRAWDOWN ALERT' : '✅ NORMAL — Stable'}
                 </div>
                 {har.last_stable_stage != null && (
                   <div style={{fontSize:12, marginTop:8}}>
@@ -792,7 +913,7 @@ function App() {
               </div>
             ) : (
               <div style={{color:'var(--muted)', fontSize:12}}>
-                Run an analysis to activate the Harrowing Protocol and begin stable-state preservation.
+                Run an analysis to activate the Drawdown Recovery Protocol and begin baseline locking.
               </div>
             )}
           </div>
@@ -800,10 +921,10 @@ function App() {
           {/* Threats */}
           {analysis?.threats?.length > 0 && (
             <div className="card">
-              <div className="card-title">⚠️ Active Threats</div>
+              <div className="card-title">⚠️ Active Risk Alerts</div>
               {analysis.threats.map((t,i)=>{
-                const sevColors = {CRITICAL:'#ef4444', HIGH:'#f97316', MEDIUM:'#eab308'};
-                const col = sevColors[t.severity]||'#64748b';
+                const sevColorsT = {CRITICAL:'#ef4444', HIGH:'#f97316', MEDIUM:'#eab308'};
+                const col = sevColorsT[t.severity]||'#64748b';
                 return (
                   <div className="threat-item" key={i} style={{borderLeftColor:col}}>
                     <div style={{flex:1}}>
@@ -820,6 +941,188 @@ function App() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── COMPLIANCE / OVERWATCH SECTION ── */}
+      <div className="compliance-section">
+        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16}}>
+          <div>
+            <div style={{fontSize:16, fontWeight:800, letterSpacing:.5, color:'var(--accent)'}}>🛡️ Compliance &amp; Overwatch Monitor</div>
+            <div style={{fontSize:11, color:'var(--muted)', marginTop:2}}>Run rule-based compliance checks across registered trading platforms</div>
+          </div>
+          <button className="btn" onClick={runComplianceCheck} disabled={compLoading||!holdings.length}>
+            {compLoading ? <><span className="spinner"/> Checking…</> : '🔍 Run Compliance Check'}
+          </button>
+        </div>
+
+        {/* Compliance result summary */}
+        {compResult && (
+          <div style={{background:'var(--card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:18, marginBottom:16}}>
+            <div style={{fontSize:10, textTransform:'uppercase', letterSpacing:'1.5px', color:'var(--muted)', marginBottom:12}}>Latest Check Result</div>
+            <div className="compliance-score-ring">
+              <div>
+                <div className="compliance-score-num" style={{color:compScoreColor(compResult.compliance_score)}}>{compResult.compliance_score}</div>
+                <div style={{fontSize:11, color:'var(--muted)', marginTop:2}}>Compliance Score</div>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:6}}>
+                  <span className="compliance-status-pill" style={{background:`${compResult.status_color}20`, color:compResult.status_color, border:`1px solid ${compResult.status_color}40`}}>
+                    {compResult.status}
+                  </span>
+                  <span style={{fontSize:11, color:'var(--muted)'}}>{new Date(compResult.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div className="compliance-stat-row">
+                  <div className="c-stat">
+                    <div className="c-stat-label">Rules Checked</div>
+                    <div className="c-stat-val">{compResult.rules_checked}</div>
+                  </div>
+                  <div className="c-stat">
+                    <div className="c-stat-label">Passed</div>
+                    <div className="c-stat-val" style={{color:'var(--green)'}}>{compResult.rules_passed}</div>
+                  </div>
+                  <div className="c-stat">
+                    <div className="c-stat-label">Critical</div>
+                    <div className="c-stat-val" style={{color:'var(--red)'}}>{compResult.critical_count}</div>
+                  </div>
+                  <div className="c-stat">
+                    <div className="c-stat-label">Warnings</div>
+                    <div className="c-stat-val" style={{color:'#eab308'}}>{compResult.warning_count}</div>
+                  </div>
+                </div>
+                {compResult.violations?.length > 0 && (
+                  <div style={{marginTop:10}}>
+                    <div style={{fontSize:10, textTransform:'uppercase', letterSpacing:'1px', color:'var(--muted)', marginBottom:8}}>Violations</div>
+                    {compResult.violations.map((v,i)=>(
+                      <div className="violation-item" key={i}>
+                        <div className="viol-rule" style={{color:sevColors[v.severity]||'var(--text)'}}>{v.rule_name}</div>
+                        <div className="viol-detail">{v.metric}: <strong style={{color:sevColors[v.severity]||'var(--text)'}}>{v.actual}</strong> (required {v.required}) — {v.severity}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="compliance-tabs">
+          {[['check','📋 Rules'],['platforms','🏦 Platforms'],['alerts','🔔 Alerts']].map(([key,label])=>(
+            <button key={key} className={`ctab ${compTab===key?'active':''}`} onClick={()=>setCompTab(key)}>{label}
+              {key==='alerts' && compAlerts.filter(a=>!a.resolved).length > 0 &&
+                <span style={{marginLeft:6, background:'var(--red)', color:'#fff', borderRadius:10, padding:'1px 6px', fontSize:9, fontWeight:800}}>
+                  {compAlerts.filter(a=>!a.resolved).length}
+                </span>
+              }
+            </button>
+          ))}
+        </div>
+
+        {/* Rules tab */}
+        {compTab==='check' && (
+          <div style={{background:'var(--card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:18}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
+              <div style={{fontSize:10, textTransform:'uppercase', letterSpacing:'1.5px', color:'var(--muted)'}}>Active Compliance Rules — {compRules.length} total</div>
+              <div style={{fontSize:10, color:'var(--muted)'}}>Click toggle to enable/disable</div>
+            </div>
+            {compRules.map(r=>(
+              <div className="rule-row" key={r.rule_id}>
+                <button className="rule-toggle"
+                  style={{background: r.enabled ? 'var(--green)' : 'var(--border2)'}}
+                  onClick={()=>toggleRule(r.rule_id)}
+                  title={r.enabled ? 'Click to disable' : 'Click to enable'}
+                >
+                  <div style={{width:14, height:14, borderRadius:'50%', background:'#fff', position:'absolute', top:2, transition:'left .2s', left: r.enabled ? 16 : 2}}/>
+                </button>
+                <div style={{flex:1}}>
+                  <div style={{display:'flex', alignItems:'center', gap:8}}>
+                    <span className="rule-name" style={{opacity: r.enabled ? 1 : .45}}>{r.name}</span>
+                    <span className="rule-sev" style={{background:`${sevColors[r.severity]||'#64748b'}20`, color:sevColors[r.severity]||'#64748b'}}>{r.severity}</span>
+                    {r.built_in && <span style={{fontSize:9, color:'var(--muted)', letterSpacing:.5}}>DEFAULT</span>}
+                  </div>
+                  <div className="rule-metric">{r.metric} <span className="rule-threshold">{r.operator === 'gte' ? '≥' : r.operator === 'lte' ? '≤' : r.operator === 'gt' ? '>' : '<'} {r.threshold}</span></div>
+                </div>
+              </div>
+            ))}
+            {compRules.length === 0 && <div style={{color:'var(--muted)', fontSize:13, textAlign:'center', padding:'20px 0'}}>No rules configured.</div>}
+          </div>
+        )}
+
+        {/* Platforms tab */}
+        {compTab==='platforms' && (
+          <div style={{background:'var(--card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:18}}>
+            <div style={{fontSize:10, textTransform:'uppercase', letterSpacing:'1.5px', color:'var(--muted)', marginBottom:12}}>Registered Platforms</div>
+            <div className="platform-form">
+              <input className="input-full" placeholder="Platform name, e.g. TD Ameritrade" value={newPlatName} onChange={e=>setNewPlatName(e.target.value)} />
+              <select className="input-full" value={newPlatType} onChange={e=>setNewPlatType(e.target.value)}
+                style={{background:'var(--card2)', border:'1px solid var(--border2)', color:'var(--text)', borderRadius:6, padding:'8px 10px', cursor:'pointer'}}>
+                <option value="broker">Broker Account</option>
+                <option value="prop_firm">Prop Firm</option>
+                <option value="fund">Fund</option>
+                <option value="personal">Personal</option>
+              </select>
+            </div>
+            <button className="btn btn-sm" style={{marginBottom:16}} onClick={registerPlatform} disabled={!newPlatName.trim()}>+ Add Platform</button>
+            {compPlatforms.map(p=>{
+              const sc = p.compliance_score;
+              const stColor = {'PASS':'#22c55e','CAUTION':'#eab308','FAIL':'#ef4444'}[p.status]||'var(--muted)';
+              return (
+                <div className="platform-row" key={p.platform_id}>
+                  <div style={{flex:1}}>
+                    <div style={{display:'flex', alignItems:'center', gap:8}}>
+                      <span className="platform-name">{p.name}</span>
+                      <span className="platform-type">{p.platform_type}</span>
+                    </div>
+                    <div style={{fontSize:11, color:'var(--muted)', marginTop:2}}>
+                      {p.last_check ? `Last checked: ${new Date(p.last_check).toLocaleTimeString()}` : 'Not yet checked — run a compliance check'}
+                    </div>
+                  </div>
+                  {sc != null && <span className="platform-score" style={{color:compScoreColor(sc)}}>{sc}</span>}
+                  {p.status !== 'pending' && (
+                    <span className="platform-status" style={{background:`${stColor}20`, color:stColor, border:`1px solid ${stColor}40`}}>{p.status}</span>
+                  )}
+                  <button className="btn btn-sm btn-outline" style={{marginLeft:4, padding:'4px 10px', fontSize:11}} onClick={()=>deletePlatform(p.platform_id)}>✕</button>
+                </div>
+              );
+            })}
+            {compPlatforms.length === 0 && <div style={{color:'var(--muted)', fontSize:13, textAlign:'center', padding:'20px 0'}}>No platforms registered. Add one above to begin monitoring.</div>}
+          </div>
+        )}
+
+        {/* Alerts tab */}
+        {compTab==='alerts' && (
+          <div style={{background:'var(--card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:18}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
+              <div style={{fontSize:10, textTransform:'uppercase', letterSpacing:'1.5px', color:'var(--muted)'}}>
+                Violation Log — {compAlerts.filter(a=>!a.resolved).length} unresolved
+              </div>
+              {compAlerts.length > 0 && (
+                <button className="btn btn-sm btn-outline" onClick={clearAlerts}>Clear All</button>
+              )}
+            </div>
+            {compAlerts.map(a=>{
+              const col = sevColors[a.severity]||'#64748b';
+              return (
+                <div className={`alert-row ${a.resolved?'resolved':''}`} key={a.alert_id} style={{borderLeftColor:col}}>
+                  <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:3}}>
+                    <span style={{fontWeight:700, color:col, fontSize:11}}>{a.severity}</span>
+                    <span style={{fontWeight:600}}>{a.rule_name}</span>
+                    <span style={{fontSize:10, color:'var(--muted)', marginLeft:'auto'}}>{new Date(a.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <div style={{fontSize:11, color:'var(--muted)'}}>
+                    {a.metric}: actual <strong style={{color:col}}>{a.actual}</strong> (required {a.required})
+                    {a.platform_id && <span style={{marginLeft:8, fontSize:10, color:'var(--accent)'}}>Platform: {a.platform_id}</span>}
+                  </div>
+                  {!a.resolved && (
+                    <button style={{marginTop:5, fontSize:10, background:'none', border:'1px solid var(--border)', color:'var(--muted)', borderRadius:4, padding:'2px 8px', cursor:'pointer'}}
+                      onClick={()=>resolveAlert(a.alert_id)}>Mark resolved</button>
+                  )}
+                </div>
+              );
+            })}
+            {compAlerts.length === 0 && <div style={{color:'var(--muted)', fontSize:13, textAlign:'center', padding:'20px 0'}}>No compliance alerts logged yet. Run a check to begin.</div>}
+          </div>
+        )}
       </div>
 
       {/* TOAST */}
