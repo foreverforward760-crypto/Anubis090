@@ -1,0 +1,91 @@
+================================================================================
+ANUBIS PLATFORM — OFFICIAL INTELLECTUAL PROPERTY NOTICE
+================================================================================
+
+Product:        ANUBIS — LUMINARK Portfolio Intelligence & Compliance Platform
+Version:        3.0.0
+Owner:          Richard L. Stanfield
+Organization:   Meridian Axiom Alignment Technologies (MAAT)
+Contact:        info.rstanfield@gmail.com
+
+--------------------------------------------------------------------------------
+COPYRIGHT
+--------------------------------------------------------------------------------
+
+Copyright (c) 2024-2026 Richard L. Stanfield / Meridian Axiom Alignment
+Technologies (MAAT). All Rights Reserved.
+
+--------------------------------------------------------------------------------
+PATENT NOTICE
+--------------------------------------------------------------------------------
+
+One or more features of this product are covered by pending patent applications
+filed with the United States Patent and Trademark Office (USPTO).
+
+Application subject matter includes:
+  • The SAP (Stanfield's Asset Progression) 10-stage classification system
+  • The NSDT (Non-linear Stage Dimensional Taxonomy) multi-dimensional analysis
+    methodology comprising Resilience, Trend Consistency, Stress Load, and
+    Position Stability dimensions
+  • The Fragility Index scoring algorithm
+  • The False Breakout Detection method
+  • The Discipline Protocol (Hubris Scanner + False Breakout Detection +
+    Controlled Exposure Reduction)
+  • The Drawdown Recovery Protocol (Last Healthy Baseline + Baseline Recovery
+    Sequence + Circuit Breaker Mode)
+  • The Position Trajectory Tracker (stage_velocity, risk_momentum,
+    rigidity_index, recovery_index)
+  • The Compliance & Overwatch Layer for multi-platform risk rule enforcement
+  • The CITI (Cascade Intelligent Tumbling Indicator) systemic alert system
+  • The Trader Behavior Profiler (7-metric behavioral stage assessment)
+  • The Adaptive Rebalancer (60% rerouting algorithm)
+  • API architecture for real-time SAP/NSDT scoring and compliance monitoring
+
+Patent Applications filed: March 2026
+Coverage: United States; international filings pending
+
+--------------------------------------------------------------------------------
+TRADEMARK NOTICE
+--------------------------------------------------------------------------------
+
+The following names and marks are trademarks or pending trademarks of Richard
+L. Stanfield / Meridian Axiom Alignment Technologies (MAAT):
+
+  ANUBIS™
+  LUMINARK™
+  LUMINARK OVERWATCH™
+  LUMINARK OVERWATCH PRIME ULTRA™
+  LUMINARK CONSCIOUSNESS ENGINE OMEGA™
+  SAP™ (Stanfield's Asset Progression)
+  NSDT™ (Non-linear Stage Dimensional Taxonomy)
+  MAAT™ (Meridian Axiom Alignment Technologies)
+  CITI™ (Cascade Intelligent Tumbling Indicator)
+  Fragility Index™
+  Discipline Protocol™
+  Drawdown Recovery Protocol™
+  Position Trajectory Tracker™
+
+Unauthorized use of these marks is prohibited.
+
+--------------------------------------------------------------------------------
+THIRD-PARTY COMPONENTS
+--------------------------------------------------------------------------------
+
+This software makes use of the following open-source components under their
+respective licenses. Their inclusion does not affect the proprietary status of
+ANUBIS or its underlying methodology.
+
+  FastAPI         — MIT License     https://github.com/tiangolo/fastapi
+  Uvicorn         — BSD License     https://github.com/encode/uvicorn
+  Pydantic        — MIT License     https://github.com/pydantic/pydantic
+  yfinance        — Apache 2.0      https://github.com/ranaroussi/yfinance
+  React           — MIT License     https://github.com/facebook/react
+  Chart.js        — MIT License     https://github.com/chartjs/Chart.js
+
+The underlying SAP/NSDT analytical framework, scoring algorithms, compliance
+engine, and all business logic are original works of Richard L. Stanfield
+and are NOT covered by any open-source license.
+
+--------------------------------------------------------------------------------
+
+ANUBIS v3.0.0 | © 2024-2026 Richard L. Stanfield / MAAT | Patent Pending

@@ -1,0 +1,118 @@
+ANUBIS COMMERCIAL SOFTWARE LICENSE
+================================================================================
+Copyright (c) 2024-2026 Richard L. Stanfield
+Meridian Axiom Alignment Technologies (MAAT)
+All Rights Reserved.
+
+PROPRIETARY AND CONFIDENTIAL SOFTWARE
+
+================================================================================
+NOTICE OF INTELLECTUAL PROPERTY
+================================================================================
+
+This software, the ANUBIS Platform, and the underlying methodologies — including
+but not limited to the Stanfield Asset Progression (SAP) Framework, the NSDT
+Multi-Dimensional Analysis System (comprising Resilience, Trend Consistency,
+Stress Load, and Position Stability dimensions), the Discipline Protocol, the
+Drawdown Recovery Protocol, the Position Trajectory Tracker, the Compliance &
+Overwatch Layer, and all associated algorithms, data structures, scoring models,
+classification logic, and user interface designs — are the exclusive intellectual
+property of Richard L. Stanfield and Meridian Axiom Alignment Technologies (MAAT).
+
+Patent Pending — United States Patent and Trademark Office (USPTO)
+Application filed March 2026.
+
+================================================================================
+LICENSE GRANT
+================================================================================
+
+This software is NOT open source. No license to use, copy, modify, merge,
+publish, distribute, sublicense, or sell copies of this software is granted
+except pursuant to a written Commercial License Agreement executed between the
+licensee and Richard L. Stanfield / MAAT.
+
+Viewing this code on a public repository does not constitute a license to use it.
+
+================================================================================
+PERMITTED USE (WITHOUT A LICENSE AGREEMENT)
+================================================================================
+
+The following activities are permitted solely for evaluation purposes:
+
+1. Reading this source code for the purpose of evaluating a potential license.
+2. Running one (1) local instance of this software for personal, non-commercial
+   evaluation for a period not to exceed thirty (30) days.
+3. Discussing the methodology and capabilities with MAAT for the purpose of
+   negotiating a license agreement.
+
+================================================================================
+STRICTLY PROHIBITED WITHOUT A SIGNED LICENSE AGREEMENT
+================================================================================
+
+1. Commercial use of this software or any portion thereof.
+2. Deployment of this software in any production environment.
+3. Integration of this software or its methodology into any third-party product,
+   service, platform, or application.
+4. Redistribution of this software in source or binary form.
+5. Modification, adaptation, or creation of derivative works.
+6. Reverse engineering of the SAP/NSDT scoring methodology for independent
+   reimplementation.
+7. Use of the ANUBIS, LUMINARK, SAP, NSDT, or MAAT trademarks.
+8. Removal or alteration of this copyright notice or any other proprietary notices.
+
+================================================================================
+LICENSING OPTIONS
+================================================================================
+
+MAAT offers the following commercial license tiers:
+
+  DEVELOPER LICENSE
+  Permits a single developer to build and test integrations against the ANUBIS
+  API. Non-production use only. Annual subscription.
+
+  PLATFORM LICENSE
+  Permits integration of the ANUBIS engine and SAP/NSDT methodology into one
+  (1) commercial software product or service. Includes API access, technical
+  support, and quarterly updates.
+
+  ENTERPRISE LICENSE
+  Full deployment rights across an organization. Includes white-label rights,
+  source code escrow, SLA, dedicated support, and full documentation package.
+
+  OEM / EMBEDDED LICENSE
+  Permits embedding of the SAP/NSDT scoring engine into hardware devices,
+  trading terminals, financial data platforms, or brokerage infrastructure.
+
+For licensing inquiries:
+  Email: info.rstanfield@gmail.com
+  Subject: "ANUBIS License Inquiry"
+
+================================================================================
+DISCLAIMER OF WARRANTIES
+================================================================================
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL
+RICHARD L. STANFIELD OR MAAT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ANUBIS IS NOT A FINANCIAL ADVISORY SERVICE. ALL SAP STAGE CLASSIFICATIONS,
+NSDT SCORES, FRAGILITY INDEX VALUES, COMPLIANCE SCORES, AND RECOMMENDATIONS
+ARE FOR INFORMATIONAL PURPOSES ONLY AND DO NOT CONSTITUTE FINANCIAL, INVESTMENT,
+OR LEGAL ADVICE.
+
+================================================================================
+GOVERNING LAW
+================================================================================
+
+This license and any disputes arising under it shall be governed by the laws
+of the State of [Licensor's State], United States of America, without regard
+to its conflict of law provisions.
+
+================================================================================
+
+ANUBIS v3.0.0 | LUMINARK OVERWATCH PRIME ULTRA | LUMINARK OMEGA
+© 2024-2026 Richard L. Stanfield / MAAT — All Rights Reserved

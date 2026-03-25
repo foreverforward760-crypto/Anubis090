@@ -1,32 +1,54 @@
 """
-ANUBIS — LUMINARK-Powered Stock Portfolio Intelligence Platform
-FastAPI Backend  |  Version 2.0.0  |  Production Ready
-Author: Richard L. Stanfield  |  Meridian Axiom Alignment Technologies
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ANUBIS — LUMINARK Portfolio Intelligence & Compliance Platform              ║
+║  Version 3.0.0  |  Production Licensed Software                             ║
+║                                                                              ║
+║  Copyright © 2024-2026 Richard L. Stanfield                                 ║
+║  Meridian Axiom Alignment Technologies (MAAT)                               ║
+║  All Rights Reserved.                                                        ║
+║                                                                              ║
+║  PROPRIETARY AND CONFIDENTIAL                                                ║
+║  This software and the SAP/NSDT methodology contained herein are the        ║
+║  exclusive intellectual property of Richard L. Stanfield and MAAT.          ║
+║  Patent Pending — USPTO (Application filed March 2026)                      ║
+║                                                                              ║
+║  UNAUTHORIZED COPYING, DISTRIBUTION, MODIFICATION, OR USE OF THIS           ║
+║  SOFTWARE, VIA ANY MEDIUM, IS STRICTLY PROHIBITED WITHOUT A VALID           ║
+║  COMMERCIAL LICENSE AGREEMENT FROM RICHARD L. STANFIELD / MAAT.            ║
+║                                                                              ║
+║  Licensed use is governed by the ANUBIS Commercial License Agreement.       ║
+║  Contact: info.rstanfield@gmail.com                                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-Capabilities:
+ANUBIS Capabilities:
   • SAP 10-stage portfolio and holding classification (NSDT framework)
   • Real-time stock data via yfinance (falls back to deterministic mock)
-  • LuminarkTrajectoryState: session-level stage_velocity, risk_momentum,
+  • Position Trajectory Tracker: session-level stage_velocity, risk_momentum,
     rigidity_index, recovery_index across the full session
   • Discipline Protocol: HUBRIS_SCANNER + FALSE_BREAKOUT_DETECTION + CONTROLLED_EXPOSURE_REDUCTION
   • Drawdown Recovery Protocol: LAST_HEALTHY_BASELINE + BASELINE_RECOVERY_SEQUENCE + CIRCUIT_BREAKER_MODE
   • Adaptive Rebalancer: 60% reroute from Stage 0-2 holdings to healthy ones
   • Stop-Loss & Replace Protocol: position quarantine + regeneration suggestions
   • CITI: Systemic Tumbling Alert across portfolio + behavioral domains
-  • PortfolioAnalyzer: 7-metric trader behavioral stage assessment
+  • Trader Behavior Profiler: 7-metric behavioral stage assessment
+  • Compliance & Overwatch Layer: multi-platform rule enforcement + violation log
+  • API Key authentication with tiered access control
+  • SQLite persistence for compliance data, alerts, and audit trail
   • Serves the React frontend from /static/index.html
 """
 
 from __future__ import annotations
-import math, time, re, os, hashlib, json
+import math, time, re, os, hashlib, json, sqlite3, secrets
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Optional, Any, Tuple
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
+from starlette.status import HTTP_403_FORBIDDEN
 from pydantic import BaseModel, Field
 
 # ── Optional real-data dependency ─────────────────────────────────────────────
@@ -35,6 +57,108 @@ try:
     YFINANCE_AVAILABLE = True
 except ImportError:
     YFINANCE_AVAILABLE = False
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  API KEY AUTHENTICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+_API_KEY_NAME   = "X-ANUBIS-API-KEY"
+_api_key_header = APIKeyHeader(name=_API_KEY_NAME, auto_error=False)
+
+# Master key from environment; auto-generate a stable one if not set
+_MASTER_KEY = os.getenv("ANUBIS_API_KEY") or None
+_DEMO_KEY   = "ANUBIS-DEMO-" + hashlib.md5(b"anubis-demo-key-v3").hexdigest()[:12].upper()
+
+# Public endpoints — no key required
+_PUBLIC_PATHS = {"/", "/api/health", "/api/docs", "/api/redoc",
+                 "/openapi.json", "/api/portfolio/demo"}
+
+async def require_api_key(
+    api_key: Optional[str] = Security(_api_key_header),
+) -> str:
+    """Validate API key. Returns the key tier on success."""
+    if _MASTER_KEY and api_key == _MASTER_KEY:
+        return "master"
+    if api_key == _DEMO_KEY:
+        return "demo"
+    if not _MASTER_KEY and api_key is None:
+        # Dev mode — no key configured, allow all access
+        return "dev"
+    raise HTTPException(
+        status_code=HTTP_403_FORBIDDEN,
+        detail={
+            "error":   "UNAUTHORIZED",
+            "message": "Valid X-ANUBIS-API-KEY header required.",
+            "info":    "Contact info.rstanfield@gmail.com for a license key.",
+        }
+    )
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SQLITE PERSISTENCE LAYER
+# ═══════════════════════════════════════════════════════════════════════════════
+_DB_PATH = os.getenv("ANUBIS_DB_PATH", "./anubis.db")
+
+def _get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(_DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def _init_db() -> None:
+    """Create tables if they don't exist."""
+    conn = _get_db()
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS compliance_platforms (
+            platform_id   TEXT PRIMARY KEY,
+            name          TEXT NOT NULL,
+            platform_type TEXT NOT NULL DEFAULT 'broker',
+            description   TEXT DEFAULT '',
+            registered_at TEXT NOT NULL,
+            last_check    TEXT,
+            compliance_score REAL,
+            status        TEXT DEFAULT 'pending'
+        );
+        CREATE TABLE IF NOT EXISTS compliance_alerts (
+            alert_id    TEXT PRIMARY KEY,
+            rule_id     TEXT,
+            rule_name   TEXT,
+            metric      TEXT,
+            actual      REAL,
+            required    TEXT,
+            severity    TEXT,
+            platform_id TEXT,
+            timestamp   TEXT NOT NULL,
+            resolved    INTEGER DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS compliance_rules_custom (
+            rule_id   TEXT PRIMARY KEY,
+            name      TEXT NOT NULL,
+            metric    TEXT NOT NULL,
+            operator  TEXT NOT NULL,
+            threshold REAL NOT NULL,
+            severity  TEXT NOT NULL DEFAULT 'WARNING',
+            enabled   INTEGER DEFAULT 1,
+            built_in  INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS analysis_log (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp    TEXT NOT NULL,
+            portfolio_stage INTEGER,
+            portfolio_trap  REAL,
+            total_value     REAL,
+            holding_count   INTEGER,
+            api_key_tier    TEXT
+        );
+        CREATE TABLE IF NOT EXISTS license_activations (
+            activation_id TEXT PRIMARY KEY,
+            key_hash      TEXT NOT NULL,
+            tier          TEXT NOT NULL,
+            activated_at  TEXT NOT NULL,
+            last_seen     TEXT NOT NULL,
+            request_count INTEGER DEFAULT 0
+        );
+    """)
+    conn.commit()
+    conn.close()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SAP FRAMEWORK CONSTANTS
@@ -564,10 +688,46 @@ class ComplianceEngine:
     """
 
     def __init__(self) -> None:
-        self.rules:     List[Dict] = []
-        self.platforms: List[Dict] = []
-        self.alerts:    List[Dict] = []
+        # In-memory cache (populated from DB on startup)
+        self._builtin_rules: List[Dict] = []
         self._seed_default_rules()
+        self._load_from_db()
+
+    def _load_from_db(self) -> None:
+        """Load persisted platforms, custom rules, and recent alerts from SQLite."""
+        try:
+            conn = _get_db()
+            # Custom rules
+            rows = conn.execute("SELECT * FROM compliance_rules_custom ORDER BY rowid").fetchall()
+            self._custom_rules: List[Dict] = [dict(r) for r in rows]
+            for r in self._custom_rules:
+                r["enabled"]  = bool(r["enabled"])
+                r["built_in"] = bool(r["built_in"])
+            # Platforms
+            self._platforms: List[Dict] = [dict(r) for r in
+                conn.execute("SELECT * FROM compliance_platforms ORDER BY registered_at").fetchall()]
+            # Recent alerts (last 200)
+            self._alerts: List[Dict] = [dict(r) for r in
+                conn.execute("SELECT * FROM compliance_alerts ORDER BY timestamp DESC LIMIT 200").fetchall()]
+            for a in self._alerts:
+                a["resolved"] = bool(a["resolved"])
+            conn.close()
+        except Exception:
+            self._custom_rules = []
+            self._platforms    = []
+            self._alerts       = []
+
+    @property
+    def rules(self) -> List[Dict]:
+        return self._builtin_rules + self._custom_rules
+
+    @property
+    def platforms(self) -> List[Dict]:
+        return self._platforms
+
+    @property
+    def alerts(self) -> List[Dict]:
+        return self._alerts
 
     # ── Default built-in rules ────────────────────────────────────────────────
     def _seed_default_rules(self) -> None:
@@ -582,43 +742,87 @@ class ComplianceEngine:
         for d in defaults:
             d["rule_id"] = str(_uuid.uuid4())[:8]
             d["built_in"] = True
-            self.rules.append(d)
+            self._builtin_rules.append(d)
 
     # ── Rule CRUD ─────────────────────────────────────────────────────────────
     def add_rule(self, r: ComplianceRuleCreate) -> Dict:
         rule = r.dict()
-        rule["rule_id"]  = str(_uuid.uuid4())[:8]
-        rule["built_in"] = False
-        self.rules.append(rule)
+        rule["rule_id"]    = str(_uuid.uuid4())[:8]
+        rule["built_in"]   = False
+        rule["created_at"] = datetime.utcnow().isoformat() + "Z"
+        try:
+            conn = _get_db()
+            conn.execute(
+                "INSERT INTO compliance_rules_custom VALUES (:rule_id,:name,:metric,:operator,:threshold,:severity,:enabled,:built_in,:created_at)",
+                {**rule, "enabled": 1 if rule.get("enabled") else 0, "built_in": 0}
+            )
+            conn.commit(); conn.close()
+        except Exception: pass
+        self._custom_rules.append(rule)
         return rule
 
     def delete_rule(self, rule_id: str) -> bool:
-        before = len(self.rules)
-        self.rules = [r for r in self.rules if r["rule_id"] != rule_id]
-        return len(self.rules) < before
+        # Only custom rules can be deleted
+        before = len(self._custom_rules)
+        self._custom_rules = [r for r in self._custom_rules if r["rule_id"] != rule_id]
+        if len(self._custom_rules) < before:
+            try:
+                conn = _get_db()
+                conn.execute("DELETE FROM compliance_rules_custom WHERE rule_id=?", (rule_id,))
+                conn.commit(); conn.close()
+            except Exception: pass
+            return True
+        # Toggle built-in rule disabled instead of delete
+        for r in self._builtin_rules:
+            if r["rule_id"] == rule_id:
+                r["enabled"] = False
+                return True
+        return False
 
     def toggle_rule(self, rule_id: str) -> Optional[Dict]:
-        for r in self.rules:
+        for r in self._builtin_rules + self._custom_rules:
             if r["rule_id"] == rule_id:
                 r["enabled"] = not r["enabled"]
+                if not r.get("built_in"):
+                    try:
+                        conn = _get_db()
+                        conn.execute("UPDATE compliance_rules_custom SET enabled=? WHERE rule_id=?",
+                                     (1 if r["enabled"] else 0, rule_id))
+                        conn.commit(); conn.close()
+                    except Exception: pass
                 return r
         return None
 
     # ── Platform registry ─────────────────────────────────────────────────────
     def register_platform(self, p: PlatformRegister) -> Dict:
         plat = p.dict()
-        plat["platform_id"]    = str(_uuid.uuid4())[:8]
-        plat["registered_at"]  = datetime.utcnow().isoformat() + "Z"
-        plat["last_check"]     = None
+        plat["platform_id"]      = str(_uuid.uuid4())[:8]
+        plat["registered_at"]    = datetime.utcnow().isoformat() + "Z"
+        plat["last_check"]       = None
         plat["compliance_score"] = None
-        plat["status"]         = "pending"
-        self.platforms.append(plat)
+        plat["status"]           = "pending"
+        try:
+            conn = _get_db()
+            conn.execute(
+                "INSERT INTO compliance_platforms VALUES (:platform_id,:name,:platform_type,:description,:registered_at,:last_check,:compliance_score,:status)",
+                plat
+            )
+            conn.commit(); conn.close()
+        except Exception: pass
+        self._platforms.append(plat)
         return plat
 
     def delete_platform(self, platform_id: str) -> bool:
-        before = len(self.platforms)
-        self.platforms = [p for p in self.platforms if p["platform_id"] != platform_id]
-        return len(self.platforms) < before
+        before = len(self._platforms)
+        self._platforms = [p for p in self._platforms if p["platform_id"] != platform_id]
+        if len(self._platforms) < before:
+            try:
+                conn = _get_db()
+                conn.execute("DELETE FROM compliance_platforms WHERE platform_id=?", (platform_id,))
+                conn.commit(); conn.close()
+            except Exception: pass
+            return True
+        return False
 
     # ── Core compliance check ─────────────────────────────────────────────────
     def _extract_metrics(self, holdings: List[Dict], pnl_pct: float,
@@ -710,38 +914,66 @@ class ComplianceEngine:
             "metrics_snapshot": metrics,
         }
 
-        # Record to alert log
+        # Record to alert log (in-memory + DB)
         if violations:
-            for v in violations:
-                alert = {**v,
-                    "alert_id":    str(_uuid.uuid4())[:8],
-                    "platform_id": platform_id,
-                    "timestamp":   result["timestamp"],
-                    "resolved":    False,
-                }
-                self.alerts.insert(0, alert)
-            # Keep last 200 alerts
-            self.alerts = self.alerts[:200]
+            try:
+                conn = _get_db()
+                for v in violations:
+                    alert = {**v,
+                        "alert_id":    str(_uuid.uuid4())[:8],
+                        "platform_id": platform_id,
+                        "timestamp":   result["timestamp"],
+                        "resolved":    False,
+                    }
+                    self._alerts.insert(0, alert)
+                    conn.execute(
+                        "INSERT OR REPLACE INTO compliance_alerts VALUES "
+                        "(:alert_id,:rule_id,:rule_name,:metric,:actual,:required,:severity,:platform_id,:timestamp,0)",
+                        {**alert, "rule_id": alert.get("rule_id",""), "resolved": 0}
+                    )
+                conn.commit(); conn.close()
+            except Exception as _e:
+                pass
+            # Keep last 200 in memory
+            self._alerts = self._alerts[:200]
 
-        # Update platform record
-        for p in self.platforms:
+        # Update platform record (in-memory + DB)
+        for p in self._platforms:
             if p["platform_id"] == platform_id:
                 p["last_check"]       = result["timestamp"]
                 p["compliance_score"] = score
                 p["status"]           = status
+                try:
+                    conn = _get_db()
+                    conn.execute(
+                        "UPDATE compliance_platforms SET last_check=?,compliance_score=?,status=? WHERE platform_id=?",
+                        (result["timestamp"], score, status, platform_id)
+                    )
+                    conn.commit(); conn.close()
+                except Exception: pass
                 break
 
         return result
 
     def clear_alerts(self) -> int:
-        n = len(self.alerts)
-        self.alerts = []
+        n = len(self._alerts)
+        self._alerts = []
+        try:
+            conn = _get_db()
+            conn.execute("DELETE FROM compliance_alerts")
+            conn.commit(); conn.close()
+        except Exception: pass
         return n
 
     def resolve_alert(self, alert_id: str) -> bool:
-        for a in self.alerts:
+        for a in self._alerts:
             if a["alert_id"] == alert_id:
                 a["resolved"] = True
+                try:
+                    conn = _get_db()
+                    conn.execute("UPDATE compliance_alerts SET resolved=1 WHERE alert_id=?", (alert_id,))
+                    conn.commit(); conn.close()
+                except Exception: pass
                 return True
         return False
 
@@ -777,6 +1009,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+_init_db()   # Ensure SQLite tables exist at startup
 engine     = AnubisEngine()
 session    = SessionTrajectory()
 compliance = ComplianceEngine()
@@ -788,12 +1021,37 @@ async def health():
     return {
         "status":    "operational",
         "version":   "3.0.0",
+        "product":   "ANUBIS — LUMINARK Portfolio Intelligence & Compliance",
+        "copyright": "© 2024-2026 Richard L. Stanfield / MAAT. All Rights Reserved.",
+        "patent":    "Pending — USPTO (Application filed March 2026)",
         "yfinance":  YFINANCE_AVAILABLE,
         "real_data": YFINANCE_AVAILABLE,
         "snapshots": len(session.snapshots),
-        "compliance_rules":    len(compliance.rules),
+        "compliance_rules":     len(compliance.rules),
         "compliance_platforms": len(compliance.platforms),
-        "compliance_alerts":   len(compliance.alerts),
+        "compliance_alerts":    len(compliance.alerts),
+        "auth_mode": "master" if _MASTER_KEY else "dev",
+        "demo_key":  _DEMO_KEY if not _MASTER_KEY else None,
+    }
+
+@app.get("/api/license",
+         summary="License and product information",
+         tags=["System"])
+async def license_info(key_tier: str = Depends(require_api_key)):
+    """Returns product licensing information and API key tier."""
+    return {
+        "product":        "ANUBIS — LUMINARK Portfolio Intelligence & Compliance Platform",
+        "version":        "3.0.0",
+        "owner":          "Richard L. Stanfield",
+        "organization":   "Meridian Axiom Alignment Technologies (MAAT)",
+        "copyright":      "© 2024-2026 Richard L. Stanfield / MAAT. All Rights Reserved.",
+        "patent_status":  "Patent Pending — USPTO (Application filed March 2026)",
+        "ip_framework":   ["SAP (Stanfield's Asset Progression)", "NSDT Multi-Dimensional Analysis",
+                           "LUMINARK Overwatch", "LUMINARK Omega"],
+        "key_tier":       key_tier,
+        "licensing":      "Commercial licenses available. Contact: info.rstanfield@gmail.com",
+        "terms":          "Use of this software is governed by the ANUBIS Commercial License Agreement.",
+        "trademark":      "ANUBIS, LUMINARK, SAP, NSDT, MAAT are trademarks of Richard L. Stanfield.",
     }
 
 @app.get("/api/portfolio/demo")
@@ -801,7 +1059,7 @@ async def demo_portfolio():
     return {"holdings": DEMO_PORTFOLIO, "message": "Demo portfolio loaded — 6 holdings"}
 
 @app.post("/api/analyze")
-async def analyze(req: AnalyzeRequest):
+async def analyze(req: AnalyzeRequest, key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key)):
     if not req.holdings:
         raise HTTPException(400, "Provide at least one holding.")
 
@@ -901,7 +1159,7 @@ async def get_trajectory():
     return session.get_metrics()
 
 @app.post("/api/yunus_scan")
-async def yunus_scan(req: YunusScanRequest):
+async def yunus_scan(req: YunusScanRequest, key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key)):
     return engine.yunus_scan(req.text, req.stage, req.coherence)
 
 @app.get("/api/harrowing_status")
@@ -986,7 +1244,7 @@ async def delete_platform(platform_id: str):
 @app.post("/api/compliance/check",
           summary="Run a compliance check on a portfolio",
           tags=["Compliance"])
-async def run_compliance_check(req: ComplianceCheckRequest):
+async def run_compliance_check(req: ComplianceCheckRequest, key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key), key_tier: str = Depends(require_api_key)):
     """Submit a portfolio for compliance analysis against all enabled rules.
     Optionally tag to a registered platform_id. Returns violations, score, and status."""
     if not req.holdings:
