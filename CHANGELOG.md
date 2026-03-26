@@ -1,69 +1,32 @@
-# ANUBIS Platform — Changelog
+# ANUBIS Changelog
 
-All notable changes to this project are documented here.
+## v4.0.0 — March 2026
+**LUMINARK v5 integration — SAR / NMAP / Bifurcation / 369 Resonance**
 
----
+New endpoints powered by LUMINARK OVERWATCH PRIME ULTRA v5.0:
 
-## [3.0.0] — 2026-03-25
+- `POST /api/sar/velocity` — Stage velocity simulation (dS/dt physics engine). Compute how fast any position is moving through SAR stages, project N steps forward, get full trajectory with gate notation (e.g. `4.5↓@L1`).
+- `POST /api/sar/bifurcation` — Stage 5 three-way bifurcation probability. For any position approaching the critical threshold, returns P(advance), P(graceful regression), P(crisis) using sigmoid model.
+- `POST /api/sar/resonance` — 369 critical gate detection. Identifies positions at magnetic drag gates (3/6: 90%, 8: 100% High Voltage, 9: 0% Slipstream).
+- `POST /api/nmap/classify` — NMAP Economic Stage Classifier. Classifies economic/market conditions into SAP Stage 0-9. Stage 8 detection: ≥4 of 6 criteria → 70% probability Stage 9 correction within 18-36 months.
+- `POST /api/sar/container_rule` — Container Rule analysis. Content (inner drive, 1st digit) vs Container (outer form, 2nd digit), pivot at 4.5, Divine Line detection (digital root 9).
+- `GET  /api/sar/stage_names` — SAR gate name + flux dynamics reference table.
 
-### Added
-- **Compliance & Overwatch Layer** — Full rule-based compliance monitoring engine
-  - 6 built-in default risk rules (min portfolio stage, max fragility index, max drawdown, max concentration, max critical holdings, max overextended count)
-  - Custom rule CRUD via API and UI
-  - Platform registry — register and track multiple trading platforms/accounts
-  - Timestamped violation alert log with resolve workflow
-  - 12 new `/api/compliance/*` endpoints
-  - Compliance dashboard UI panel (Rules, Platforms, Alerts tabs)
-- **API Key Authentication** — `X-ANUBIS-API-KEY` header enforcement
-  - Master key via `ANUBIS_API_KEY` environment variable
-  - Demo key for evaluation access
-  - Dev mode (no key required) when master key is not configured
-- **SQLite Persistence** — Compliance data, alert log, and platforms survive restarts
-  - Configurable via `ANUBIS_DB_PATH` environment variable
-  - Auto-schema migration on startup
-- **`/api/license` endpoint** — Returns product/IP information and key tier
-- **`/api/compliance/summary` endpoint** — Aggregate dashboard across all platforms
-- Finance-aligned terminology throughout (replaced all mystical/spiritual labels)
-  - 10 SAP stage labels updated (Total Loss → Elite Alpha)
-  - 10 Trader archetypes updated
-  - All protocol names, metric names, and UI labels modernized
-- Proprietary LICENSE, NOTICE, and SECURITY files
+## v3.1.0 — March 2026
+- API key auth (tiered: master / demo)
+- SQLite persistence for compliance data and audit trail
+- Full IP / legal licensing layer (MAAT Commercial License)
+- SECURITY.md, NOTICE file
 
-### Changed
-- Version bumped to 3.0.0
-- App description updated to reflect compliance capabilities
-- Health endpoint now returns copyright, patent, and auth mode information
-- All API routes now support auth via dependency injection
+## v3.0.0 — March 2026
+- Compliance & Overwatch layer: multi-platform rule enforcement
+- Finance terminology modernization
+- Violation log with resolve/clear workflow
 
----
-
-## [2.0.0] — 2026-03-24
-
-### Added
-- ANUBIS Platform initial production build
-- SAP 10-stage portfolio classification (NSDT framework)
-- Position Trajectory Tracker (stage_velocity, risk_momentum, rigidity_index, recovery_index)
-- Discipline Protocol: Hubris Scanner + False Breakout Detection + Controlled Exposure Reduction
-- Drawdown Recovery Protocol: Last Healthy Baseline + Baseline Recovery Sequence + Circuit Breaker Mode
-- Adaptive Rebalancer (60% rerouting from Stage 0-2 positions)
-- Stop-Loss & Replace Protocol
-- CITI Systemic Tumbling Alert
-- Trader Behavior Profiler (7-metric behavioral stage assessment)
-- React frontend served from `/static/index.html`
-- yfinance real-time data with deterministic mock fallback
-- Docker + Render.com deployment configuration
-
----
-
-## Legend
-
-- **Added** — New features
-- **Changed** — Changes in existing functionality
-- **Deprecated** — Soon-to-be removed features
-- **Removed** — Removed features
-- **Fixed** — Bug fixes
-- **Security** — Security fixes
-
----
-
-*© 2024-2026 Richard L. Stanfield / MAAT — All Rights Reserved*
+## v2.0.0 — March 2026
+- LUMINARK-powered portfolio intelligence (initial build)
+- SAP 10-stage portfolio classification
+- CITI systemic alert
+- Trader behavior profiler
+- Yunus / Harrowing protocols
+- React frontend

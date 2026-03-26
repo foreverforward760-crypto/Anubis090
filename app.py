@@ -1,7 +1,7 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  ANUBIS — LUMINARK Portfolio Intelligence & Compliance Platform              ║
-║  Version 3.0.0  |  Production Licensed Software                             ║
+║  Version 4.0.0  |  Production Licensed Software                             ║
 ║                                                                              ║
 ║  Copyright © 2024-2026 Richard L. Stanfield                                 ║
 ║  Meridian Axiom Alignment Technologies (MAAT)                               ║
@@ -1313,6 +1313,281 @@ async def compliance_summary():
                            "CAUTION" if caution > 0 or unresolved_alerts > 0 else
                            "PASS"    if total_platforms > 0 else "NO_PLATFORMS"),
     }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUMINARK v5 — SAR / NMAP / BIFURCATION / 369 RESONANCE ENDPOINTS
+#  Integrated from LUMINARK OVERWATCH PRIME ULTRA v5.0 (March 2026)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+import math as _math5
+
+# ── SAR helpers (self-contained, no external import needed) ───────────────────
+
+_SAR_GROWTH_RATES = {0:0.10,1:0.50,2:0.55,3:0.60,4:0.45,5:0.70,6:0.50,7:0.35,8:0.20,9:0.05}
+_SAR_GATE_NAMES   = {0:"Void/Reset",1:"Spark",2:"Forge",3:"Engine of Expression",
+                     4:"Crucible",5:"Dynamo of Will",6:"Nexus",7:"Lens",8:"Vessel",9:"Slipstream"}
+_FLUX_DRAG        = {3:90.0,6:90.0,8:100.0,9:0.0}
+
+def _digital_root(n: int) -> int:
+    if n == 0: return 0
+    return 1 + (n - 1) % 9
+
+def _sigmoid(x: float) -> float:
+    return 1.0 / (1.0 + _math5.exp(-x))
+
+def _sar_dm_dt(gate:int, micro:float, arc:str, energy:float, integrity:float, maat:float, layer:int=1) -> float:
+    r = _SAR_GROWTH_RATES.get(gate, 0.3)
+    ms_mod = 0.5 + micro
+    arc_mod = 1.0 if arc == "descending" else 0.85
+    f_layer = 1.0 / _math5.sqrt(max(layer, 1))
+    return arc_mod * r * ms_mod * (energy/100) * (integrity/100) * (maat/100) * f_layer
+
+def _stage5_bifurcation(integrity:float, energy:float, maat:float, prep:float=50.0, consciousness:float=50.0) -> dict:
+    w = [0.30,0.25,0.20,0.15,0.10]
+    raw_s = w[0]*integrity + w[1]*energy + w[2]*maat + w[3]*prep - 50.0
+    raw_r = 0.25*(100-integrity) + 0.20*(100-energy) + 0.15*consciousness - 30.0
+    p_s = _sigmoid(raw_s * 0.08)
+    p_r = _sigmoid(raw_r * 0.07) * (1 - p_s)
+    p_c = max(0.0, 1.0 - p_s - p_r)
+    total = p_s + p_r + p_c
+    p_s, p_r, p_c = p_s/total, p_r/total, p_c/total
+    if p_s >= 0.60:   outcome = "ADVANCE"
+    elif p_r >= 0.50: outcome = "GRACEFUL_REGRESSION"
+    else:             outcome = "CRISIS_RISK"
+    return {"p_success":round(p_s,3),"p_regression":round(p_r,3),"p_crisis":round(p_c,3),"outcome":outcome}
+
+def _calc_369_resonance(gate:int, micro:float) -> dict:
+    r = _SAR_GROWTH_RATES.get(gate, 0.3)
+    pos = gate + micro
+    alignment = _math5.cos(2 * _math5.pi * (pos / 9.0))
+    delta = 1.0 if gate in (3,6,9) else 0.0
+    resonance = delta * r * alignment
+    return {"gate":gate,"at_critical_gate":bool(delta),"resonance_score":round(resonance,4),
+            "harmonic_alignment":round(alignment,4),"gate_name":_SAR_GATE_NAMES.get(gate,"Unknown"),
+            "flux_drag_pct":_FLUX_DRAG.get(gate,0.0)}
+
+# ── Pydantic models for v5 endpoints ─────────────────────────────────────────
+
+class SARVelocityRequest(BaseModel):
+    gate:       int   = Field(ge=0, le=9,  description="Current SAR stage gate (0-9)")
+    micro_stage:float = Field(0.5,  ge=0.0, le=1.0, description="Sub-stage position (0.0-1.0)")
+    arc:        str   = Field("descending", description="'descending' or 'ascending'")
+    energy:     float = Field(70.0, ge=0.0, le=100.0, description="System energy %")
+    integrity:  float = Field(70.0, ge=0.0, le=100.0, description="Integrity %")
+    maat:       float = Field(70.0, ge=0.0, le=100.0, description="Ma'at alignment %")
+    layer:      int   = Field(1,    ge=1,   le=9,     description="Recursive layer (1=hours/months)")
+    steps:      int   = Field(10,   ge=1,   le=100,   description="Simulation steps")
+
+class BifurcationRequest(BaseModel):
+    integrity:    float = Field(70.0, ge=0, le=100, description="Integrity % (telemetry)")
+    energy:       float = Field(70.0, ge=0, le=100, description="Energy % (telemetry)")
+    maat:         float = Field(70.0, ge=0, le=100, description="Ma'at alignment % (telemetry)")
+    preparation:  float = Field(50.0, ge=0, le=100, description="Preparation score %")
+    consciousness:float = Field(50.0, ge=0, le=100, description="Consciousness context score %")
+
+class NMAPRequest(BaseModel):
+    gdp_growth:            float = Field(description="GDP growth rate %")
+    unemployment:          float = Field(description="Unemployment rate %")
+    inflation:             float = Field(description="Inflation rate %")
+    debt_to_gdp:           float = Field(description="Debt-to-GDP ratio %")
+    asset_deviation_sd:    float = Field(0.0, description="Asset price deviation (standard deviations)")
+    credit_expansion:      float = Field(0.0, description="Credit expansion rate %")
+    wage_productivity_gap: float = Field(0.0, description="Wage-productivity gap (percentage points)")
+    has_crisis_event:      bool  = Field(False, description="Active crisis event detected?")
+
+class ContainerRuleRequest(BaseModel):
+    ticker: str = Field(description="Ticker symbol or any two-digit code")
+    value:  float = Field(description="Numeric value to analyze (price, score, etc.)")
+
+class ResonanceRequest(BaseModel):
+    gate:        int   = Field(ge=0, le=9)
+    micro_stage: float = Field(0.5, ge=0.0, le=1.0)
+
+# ── v5 endpoints ──────────────────────────────────────────────────────────────
+
+@app.post("/api/sar/velocity",
+          summary="SAR Stage Velocity — dS/dt physics engine",
+          tags=["LUMINARK v5 — SAR"])
+async def sar_velocity(req: SARVelocityRequest, key_tier: str = Depends(require_api_key)):
+    """
+    Computes the rate of stage progression (dm/dt) using the SAR differential equation.
+    Simulates forward N steps and returns the full trajectory.
+
+    Formula: dm/dt = a * r(G,m) * (E/100) * (I/100) * (M/100) * f(L)
+    where f(L) = 1/√L
+    """
+    trajectory = []
+    current_micro = req.micro_stage
+    current_gate  = req.gate
+    for step in range(req.steps):
+        vel = _sar_dm_dt(current_gate, current_micro, req.arc, req.energy, req.integrity, req.maat, req.layer)
+        trajectory.append({
+            "step": step, "gate": current_gate,
+            "micro_stage": round(current_micro, 4),
+            "notation": f"{current_gate}.{int(current_micro*10)}{'↓' if req.arc=='descending' else '↑'}@L{req.layer}",
+            "velocity": round(vel, 5),
+            "gate_name": _SAR_GATE_NAMES.get(current_gate, "Unknown"),
+        })
+        current_micro = min(1.0, current_micro + vel)
+        if current_micro >= 1.0:
+            current_micro = 0.0
+            current_gate  = min(9, current_gate + 1)
+    return {
+        "start": f"{req.gate}.{int(req.micro_stage*10)}{'↓' if req.arc=='descending' else '↑'}@L{req.layer}",
+        "final_gate": current_gate,
+        "steps_simulated": req.steps,
+        "trajectory": trajectory,
+        "layer_scaling": round(1.0 / _math5.sqrt(req.layer), 4),
+    }
+
+@app.post("/api/sar/bifurcation",
+          summary="Stage 5 Bifurcation — 3-way probability model",
+          tags=["LUMINARK v5 — SAR"])
+async def sar_bifurcation(req: BifurcationRequest, key_tier: str = Depends(require_api_key)):
+    """
+    For any position at or approaching Stage 5, computes the three-way probability:
+    P(advance to Stage 6), P(graceful regression), P(crisis).
+
+    Uses sigmoid function: σ(x) = 1/(1+e^-x)
+    """
+    result = _stage5_bifurcation(req.integrity, req.energy, req.maat, req.preparation, req.consciousness)
+    result["interpretation"] = {
+        "ADVANCE":            "System has sufficient integrity/energy to cross Stage 5 threshold",
+        "GRACEFUL_REGRESSION":"System retreats to rebuild — not failure, healthy consolidation",
+        "CRISIS_RISK":        "Low integrity + high pressure = uncontrolled breakdown risk",
+    }.get(result["outcome"], "")
+    return result
+
+@app.post("/api/sar/resonance",
+          summary="369 Resonance Detection — critical phase gate check",
+          tags=["LUMINARK v5 — SAR"])
+async def sar_resonance(req: ResonanceRequest, key_tier: str = Depends(require_api_key)):
+    """
+    Checks whether a position is at a 3-6-9 critical gate.
+    Gates 3, 6, 9 carry maximum magnetic drag and are phase transition points.
+    Stage 8: 100% drag (High Voltage Containment)
+    Stage 9: 0% drag (Slipstream — fastest movement)
+    """
+    return _calc_369_resonance(req.gate, req.micro_stage)
+
+@app.post("/api/nmap/classify",
+          summary="NMAP Economic Stage Classifier",
+          tags=["LUMINARK v5 — NMAP"])
+async def nmap_classify(req: NMAPRequest, key_tier: str = Depends(require_api_key)):
+    """
+    Noctilucan Economic Analysis Protocol — classifies an economy or market
+    into SAP Stage 0-9 using quantitative thresholds.
+
+    Stage 8 detection: ≥4 of 6 criteria triggers 70% probability of
+    Stage 9 correction within 18-36 months (90% within 48 months).
+    """
+    # Crisis event overrides everything
+    if req.has_crisis_event:
+        return {"stage": 9, "stage_name": "The Void / Correction", "confidence": "HIGH",
+                "trigger": "CRISIS_EVENT_OVERRIDE",
+                "note": "Active crisis event detected — Rule 4: Crisis events trump all indicators → Stage 9"}
+
+    # Stage 8 six-criteria check
+    s8_hits = sum([
+        req.gdp_growth >= 3.5,
+        req.debt_to_gdp >= 120.0,
+        req.asset_deviation_sd >= 2.0,
+        req.unemployment <= 4.0,
+        req.credit_expansion >= 15.0,
+        req.wage_productivity_gap >= 2.0,
+    ])
+    if s8_hits >= 4:
+        return {"stage": 8, "stage_name": "Illusion / Peak Overextension", "confidence": "HIGH",
+                "criteria_met": s8_hits, "criteria_needed": 4,
+                "stage_9_probability_18_36mo": 0.70, "stage_9_probability_48mo": 0.90,
+                "transition_matrix": {"stage_9": 0.65, "stay_8": 0.20, "stage_7": 0.10, "stage_6": 0.05},
+                "note": f"{s8_hits}/6 Stage 8 criteria met — overextension confirmed"}
+
+    # Simple heuristic classifier for other stages
+    if req.gdp_growth < 0 and req.unemployment > 8.0:
+        stage, name = 9, "Correction / Contraction"
+    elif req.gdp_growth < 0.5 or req.unemployment > 7.0:
+        stage, name = 1, "Emergence / Early Recovery"
+    elif req.inflation > 5.0 and req.debt_to_gdp > 100:
+        stage, name = 7, "Tension / Overheating"
+    elif 2.0 <= req.gdp_growth <= 3.0 and 5.0 <= req.unemployment <= 6.5 and req.inflation <= 2.5:
+        stage, name = 4, "Foundation / Equilibrium"
+    elif req.gdp_growth > 3.0 and req.debt_to_gdp < 90:
+        stage, name = 5, "Expansion / Will"
+    elif req.gdp_growth > 3.0 and req.debt_to_gdp >= 90:
+        stage, name = 6, "Harmony / Nexus (debt building)"
+    elif req.gdp_growth < 1.0:
+        stage, name = 2, "Formation / Build Phase"
+    else:
+        stage, name = 3, "Expression / Growth"
+
+    # Rule 2: unemployment lags — adjust if employment is too tight
+    if stage in (5,6) and req.unemployment < 3.5:
+        stage = min(stage + 1, 8)
+        name  = _SAR_GATE_NAMES.get(stage, name) + " (employment lag adjusted)"
+
+    return {"stage": stage, "stage_name": name, "confidence": "MEDIUM",
+            "gdp_growth": req.gdp_growth, "unemployment": req.unemployment,
+            "debt_to_gdp": req.debt_to_gdp,
+            "note": "Stage 8 threshold not reached. Classified by primary indicator hierarchy."}
+
+@app.post("/api/sar/container_rule",
+          summary="Container Rule — Content vs Container digit analysis",
+          tags=["LUMINARK v5 — SAR"])
+async def container_rule_v5(req: ContainerRuleRequest, key_tier: str = Depends(require_api_key)):
+    """
+    Analyzes any two-digit value using the Container Rule.
+    Content (1st digit) = inner drive. Container (2nd digit) = outer form.
+    Pivot at Stage 4.5. Harmonic Resonance = digital root 9 = Divine Line.
+    """
+    val_int = int(abs(req.value)) % 100
+    d1 = val_int // 10
+    d2 = val_int % 10
+    dr = _digital_root(d1 + d2)
+    divine = dr == 9
+
+    if val_int < 45:
+        phase      = "PRE_PIVOT (content-driven)"
+        dominance  = "Content digit dominates — inner momentum drives outer form"
+    elif val_int == 45:
+        phase      = "PIVOT POINT 4.5 — perfect balance"
+        dominance  = "Content and Container in equilibrium"
+    else:
+        phase      = "POST_PIVOT (container-driven)"
+        dominance  = "Container digit dominates — outer structure shapes inner drive"
+
+    return {
+        "ticker":          req.ticker,
+        "value":           req.value,
+        "content_digit":   d1,
+        "container_digit": d2,
+        "digital_root":    dr,
+        "divine_line":     divine,
+        "phase":           phase,
+        "dominance":       dominance,
+        "harmonic_note":   "Digital root 9 = Divine Line — maximum harmonic resonance" if divine else
+                           f"Digital root {dr} — not yet at Divine Line",
+        "trap_risk":       "HIGH" if d2 == 8 and not divine else
+                           "MEDIUM" if d2 in (7,8) else "LOW",
+    }
+
+@app.get("/api/sar/stage_names",
+         summary="SAR Gate Names + Flux Dynamics reference",
+         tags=["LUMINARK v5 — SAR"])
+async def sar_stage_names():
+    """Returns all 10 SAR gate names with flux drag percentages."""
+    return {
+        str(g): {
+            "gate": g,
+            "name": _SAR_GATE_NAMES[g],
+            "flux_drag_pct": _FLUX_DRAG.get(g, 0.0),
+            "pole": {3:"MAGNETIC (+)",6:"MAGNETIC (-)",8:"HIGH VOLTAGE",9:"AXIS/SLIPSTREAM"}.get(g, "STANDARD"),
+        } for g in range(10)
+    }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  END LUMINARK v5 BLOCK
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # ── Serve frontend ─────────────────────────────────────────────────────────────
 _here = os.path.dirname(os.path.abspath(__file__))
