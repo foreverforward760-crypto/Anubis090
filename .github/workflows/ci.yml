@@ -16,10 +16,10 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -30,7 +30,9 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -e ./luminark-engine
+          cd luminark-engine
+          pip install -e .
+          cd ..
           pip install -r requirements.txt
           pip install pytest httpx
 
@@ -41,7 +43,7 @@ jobs:
 
       - name: Run ANUBIS integration tests
         run: |
-          pytest tests/ -v --tb=short 2>/dev/null || echo "No ANUBIS-level tests yet — engine tests passed."
+          pytest tests/ -v --tb=short || echo "No ANUBIS-level tests yet — engine tests passed."
 
   deploy:
     name: Deploy to Render
@@ -49,10 +51,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.GH_PAT }}
 
       - name: Trigger Render deploy
         env:
