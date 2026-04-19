@@ -27,14 +27,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install dependencies
+      - name: Install build tools
+        run: pip install --upgrade pip setuptools>=68 wheel
+
+      - name: Install LuminarkHybridEngine
         run: |
-          pip install --upgrade pip
           cd luminark-engine
           pip install -e .
-          cd ..
-          pip install -r requirements.txt
-          pip install pytest httpx
+
+      - name: Install ANUBIS dependencies
+        run: pip install fastapi uvicorn pydantic python-multipart pytest httpx
 
       - name: Run LuminarkHybridEngine tests
         run: |
