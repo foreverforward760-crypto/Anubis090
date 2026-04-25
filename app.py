@@ -1,6 +1,6 @@
 """
 ANUBIS v5.0.0 — LUMINARK Portfolio Intelligence Platform
-Powered by LuminarkHybridEngine v8.1.0
+Powered by LuminarkHybridEngine v8.2.0 (Tumbling Inversion Principle)
 Author: Richard Stanfield, MAAT
 """
 
