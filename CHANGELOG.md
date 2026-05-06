@@ -1,16 +1,22 @@
 # ANUBIS Changelog
 
+## v5.0.0 — May 2026
+**Rate limiting (slowapi), v5 API surface finalised**
+
+- `slowapi` rate limiting wired to all authenticated endpoints (60 req/min write, 30 req/min read)
+- Removed unimplemented v4 endpoint stubs from docs: `/api/sar/velocity`, `/api/sar/resonance`, `/api/sar/container_rule`
+- Stage 8 description updated to Dual-Chamber Trap canonical terminology (Chamber A: Illusion of Arrival / Chamber B: Illusion of Permanence)
+- Version header corrected to 5.0.0
+
 ## v4.0.0 — March 2026
-**LUMINARK v5 integration — SAR / NMAP / Bifurcation / 369 Resonance**
+**LUMINARK v5 integration — NMAP / Bifurcation / Frequency analysis**
 
-New endpoints powered by LUMINARK OVERWATCH PRIME ULTRA v5.0:
+New endpoints implemented and production-ready:
 
-- `POST /api/sar/velocity` — Stage velocity simulation (dS/dt physics engine). Compute how fast any position is moving through SAR stages, project N steps forward, get full trajectory with gate notation (e.g. `4.5↓@L1`).
 - `POST /api/sar/bifurcation` — Stage 5 three-way bifurcation probability. For any position approaching the critical threshold, returns P(advance), P(graceful regression), P(crisis) using sigmoid model.
-- `POST /api/sar/resonance` — 369 critical gate detection. Identifies positions at magnetic drag gates (3/6: 90%, 8: 100% High Voltage, 9: 0% Slipstream).
 - `POST /api/nmap/classify` — NMAP Economic Stage Classifier. Classifies economic/market conditions into SAP Stage 0-9. Stage 8 detection: ≥4 of 6 criteria → 70% probability Stage 9 correction within 18-36 months.
-- `POST /api/sar/container_rule` — Container Rule analysis. Content (inner drive, 1st digit) vs Container (outer form, 2nd digit), pivot at 4.5, Divine Line detection (digital root 9).
-- `GET  /api/sar/stage_names` — SAR gate name + flux dynamics reference table.
+- `POST /api/frequency` — Bio-resonance / acoustic frequency analysis via FrequencyAdapter.
+- `GET  /api/sar/stage_names` — Canonical SAP stage name reference table.
 
 ## v3.1.0 — March 2026
 - API key auth (tiered: master / demo)

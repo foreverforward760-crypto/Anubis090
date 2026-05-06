@@ -1,5 +1,5 @@
 # 𓂀 ANUBIS — LUMINARK Portfolio Intelligence Platform
-**Version 4.0.0 | Powered by LUMINARK v8.2.0 (Tumbling Inversion Principle)**
+**Version 5.0.0 | Powered by LUMINARK v8.2.0 (Tumbling Inversion Principle)**
 
 > *"ANUBIS doesn't just tell you where your portfolio is. It tells you where it's going, whether it's lying to itself, and what happens if it keeps going the way it's going."*
 
@@ -35,12 +35,11 @@ Six new endpoints powered by 3,700 lines of new LUMINARK math:
 
 | Endpoint | Capability |
 |---|---|
-| `POST /api/sar/velocity` | Stage velocity (dS/dt) — simulate trajectory N steps forward |
 | `POST /api/sar/bifurcation` | Stage 5 three-way probability: advance / regression / crisis |
-| `POST /api/sar/resonance` | 369 critical gate detection — flux drag + phase transition |
-| `POST /api/nmap/classify` | NMAP Economic Classifier — Stage 0-9, Stage 8 Illusion of Permanence detection |
-| `POST /api/sar/container_rule` | Content vs Container digit analysis, Divine Line detection |
-| `GET  /api/sar/stage_names` | SAR gate names + flux dynamics reference |
+| `POST /api/nmap/classify` | NMAP Economic Classifier — Stage 0-9, Stage 8 Dual-Chamber Trap detection |
+| `POST /api/classify` | Full SAP stage classification with trap detection and unified field |
+| `POST /api/frequency` | Bio-resonance / acoustic frequency analysis via FrequencyAdapter |
+| `GET  /api/sar/stage_names` | Canonical SAP stage names reference |
 
 ---
 
@@ -66,11 +65,11 @@ Six new endpoints powered by 3,700 lines of new LUMINARK math:
 # Health check (no key required)
 curl https://your-deployment-url/api/health
 
-# Stage velocity simulation
-curl -X POST https://your-deployment-url/api/sar/velocity \
+# Stage 5 bifurcation probability
+curl -X POST https://your-deployment-url/api/sar/bifurcation \
   -H "X-ANUBIS-API-KEY: your-key" \
   -H "Content-Type: application/json" \
-  -d '{"gate": 4, "micro_stage": 0.8, "energy": 72, "integrity": 65, "maat": 80, "steps": 15}'
+  -d '{"gate": 4, "micro_stage": 0.8, "energy": 72, "integrity": 65, "maat": 80}'
 
 # NMAP economic classification
 curl -X POST https://your-deployment-url/api/nmap/classify \
@@ -134,6 +133,6 @@ ANUBIS is built on **Stanfield's Axiom of Perpetuity (SAP)** with the **Tumbling
 - Stage names are canonical constants: PLENARA, SPARK OF NAVIGATION, FORGE OF POLARITY, ENGINE OF EXPRESSION, CRUCIBLE OF EQUILIBRIUM, DYNAMO OF WILL, NEXUS OF HARMONY, LENS OF DISTILLATION, VESSEL OF GROUNDING, TRANSPARENCY OF THE GUIDE
 - Even stages (2,4,6,8) are Physically Stable / Consciously Unstable
 - Odd stages (1,3,5,7,9) are Physically Unstable / Consciously Stable
-- Stage 8 Illusion of Permanence amplifier: 1.45×
+- Stage 8 Dual-Chamber Trap: Chamber A = Illusion of Arrival (False Heaven — rigidity, false completion); Chamber B = Illusion of Permanence (False Hell — illusion suffering will never end). Amplifier: 1.45×
 
 Commercial licensing: [info.rstanfield@gmail.com](mailto:info.rstanfield@gmail.com)

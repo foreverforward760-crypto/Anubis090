@@ -11,10 +11,13 @@ import uuid
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 # --- Engine Integration ---
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "luminark-engine"))
@@ -31,6 +34,8 @@ DB_PATH      = os.getenv("ANUBIS_DB_PATH",     "anubis_audit.db")
 engine = EngineFactory.create(preset=ENGINE_PRESET)
 
 # --- FastAPI App ---
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="ANUBIS — LUMINARK Portfolio Intelligence",
     version="5.0.0",
@@ -39,6 +44,9 @@ app = FastAPI(
         "NMAP economic classifier, 369 resonance, compliance overwatch."
     ),
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -183,10 +191,11 @@ class FrequencyRequest(BaseModel):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.post("/api/classify", response_model=ClassifyResponse)
-async def classify(request: ClassifyRequest, api_key: str = Depends(verify_api_key)):
+@limiter.limit("60/minute")
+async def classify(request: Request, body: ClassifyRequest, api_key: str = Depends(verify_api_key)):
     """Full SAP stage classification with trap detection and unified field."""
-    nsdt  = NSDTBuilder.from_generic(request.dict(exclude={"system_id"}))
-    state = engine.analyze(nsdt, system_id=request.system_id or "anubis-session")
+    nsdt  = NSDTBuilder.from_generic(body.dict(exclude={"system_id"}))
+    state = engine.analyze(nsdt, system_id=body.system_id or "anubis-session")
 
     response = {
         "stage":                    state.stage.value,
@@ -199,27 +208,28 @@ async def classify(request: ClassifyRequest, api_key: str = Depends(verify_api_k
         "recalibration_recommended": state.recalibration_recommended,
         "recalibration_reason":     state.recalibration_reason,
     }
-    log_audit("/api/classify", api_key, request.dict(), response, state)
+    log_audit("/api/classify", api_key, body.dict(), response, state)
     return response
 
 
 @app.post("/api/sar/bifurcation", response_model=BifurcationResponse)
+@limiter.limit("60/minute")
 async def sar_bifurcation(
-    request: BifurcationRequest, api_key: str = Depends(verify_api_key)
+    request: Request, body: BifurcationRequest, api_key: str = Depends(verify_api_key)
 ):
     """Stage 5 three-way probability using unified field and recalibration logic."""
     from luminark import RecalibrationEngine
     from luminark.sap_types import NSDTVector
 
     nsdt = NSDTVector(
-        complexity=request.energy * 0.5,
-        stability=request.integrity,
-        tension=100 - request.maat,
-        adaptability=request.maat,
-        coherence=request.maat * 0.8,
+        complexity=body.energy * 0.5,
+        stability=body.integrity,
+        tension=100 - body.maat,
+        adaptability=body.maat,
+        coherence=body.maat * 0.8,
     )
     state = SystemState(
-        stage=SAPStage(request.gate),
+        stage=SAPStage(body.gate),
         nsdt=nsdt,
         is_trap=False,
         recommended_action="",
@@ -240,7 +250,7 @@ async def sar_bifurcation(
         recommended     = "ADVANCE"
         stage_after     = 6
 
-    uf = engine.analyze(nsdt, system_id=request.system_id or "bifurcation").unified_field_value
+    uf = engine.analyze(nsdt, system_id=body.system_id or "bifurcation").unified_field_value
 
     response = {
         "advance_prob":    advance_prob,
@@ -250,19 +260,20 @@ async def sar_bifurcation(
         "unified_field":   uf,
         "stage_after":     stage_after,
     }
-    log_audit("/api/sar/bifurcation", api_key, request.dict(), response)
+    log_audit("/api/sar/bifurcation", api_key, body.dict(), response)
     return response
 
 
 @app.post("/api/nmap/classify", response_model=NMAPResponse)
-async def nmap_classify(request: NMAPRequest, api_key: str = Depends(verify_api_key)):
+@limiter.limit("60/minute")
+async def nmap_classify(request: Request, body: NMAPRequest, api_key: str = Depends(verify_api_key)):
     """NMAP economic stage classifier using engine thresholds."""
     nsdt = NSDTBuilder.from_generic({
-        "complexity":   min(100, request.credit_expansion),
-        "stability":    max(0, 100 - request.asset_deviation_sd * 10),
-        "tension":      min(100, request.inflation * 10 + request.debt_to_gdp / 2),
-        "adaptability": max(0, 100 - abs(request.gdp_growth - 3)),
-        "coherence":    max(0, 100 - request.unemployment * 5),
+        "complexity":   min(100, body.credit_expansion),
+        "stability":    max(0, 100 - body.asset_deviation_sd * 10),
+        "tension":      min(100, body.inflation * 10 + body.debt_to_gdp / 2),
+        "adaptability": max(0, 100 - abs(body.gdp_growth - 3)),
+        "coherence":    max(0, 100 - body.unemployment * 5),
     })
     state = engine.analyze(nsdt, system_id="nmap-economy")
 
@@ -273,19 +284,20 @@ async def nmap_classify(request: NMAPRequest, api_key: str = Depends(verify_api_
         "trap_indicators":  [state.trap_reason] if state.is_trap else [],
         "recommended_action": state.recommended_action,
     }
-    log_audit("/api/nmap/classify", api_key, request.dict(), response, state)
+    log_audit("/api/nmap/classify", api_key, body.dict(), response, state)
     return response
 
 
 @app.post("/api/frequency", response_model=ClassifyResponse)
+@limiter.limit("60/minute")
 async def frequency_analyze(
-    request: FrequencyRequest, api_key: str = Depends(verify_api_key)
+    request: Request, body: FrequencyRequest, api_key: str = Depends(verify_api_key)
 ):
     """Bio-resonance / acoustic frequency analysis via FrequencyAdapter."""
     from luminark import FrequencyAdapter
 
-    nsdt  = FrequencyAdapter.from_frequency_metrics(request.dict(exclude={"system_id"}))
-    state = engine.analyze(nsdt, system_id=request.system_id or "freq-session")
+    nsdt  = FrequencyAdapter.from_frequency_metrics(body.dict(exclude={"system_id"}))
+    state = engine.analyze(nsdt, system_id=body.system_id or "freq-session")
 
     response = {
         "stage":                    state.stage.value,
@@ -298,7 +310,7 @@ async def frequency_analyze(
         "recalibration_recommended": state.recalibration_recommended,
         "recalibration_reason":     state.recalibration_reason,
     }
-    log_audit("/api/frequency", api_key, request.dict(), response, state)
+    log_audit("/api/frequency", api_key, body.dict(), response, state)
     return response
 
 
@@ -318,7 +330,8 @@ async def stage_names():
 
 
 @app.get("/api/audit/recent")
-async def recent_audit(limit: int = 20, api_key: str = Depends(verify_api_key)):
+@limiter.limit("30/minute")
+async def recent_audit(request: Request, limit: int = 20, api_key: str = Depends(verify_api_key)):
     """Return the most recent audit log entries."""
     with sqlite3.connect(DB_PATH) as conn:
         rows = conn.execute(
