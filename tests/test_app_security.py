@@ -1,10 +1,8 @@
 import os
-import tempfile
-
-os.environ.setdefault("ANUBIS_API_KEY", "a" * 40)
-os.environ.setdefault("ANUBIS_DEMO_KEY", "b" * 40)
-os.environ.setdefault("ANUBIS_CORS_ORIGINS", "https://example.test")
-os.environ.setdefault("ANUBIS_DB_PATH", ":memory:")
+os.environ["ANUBIS_API_KEY"] = "a" * 40
+os.environ["ANUBIS_DEMO_KEY"] = "b" * 40
+os.environ["ANUBIS_CORS_ORIGINS"] = "https://example.test"
+os.environ["ANUBIS_DB_PATH"] = ":memory:"
 
 import pytest
 from fastapi import HTTPException
