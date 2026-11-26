@@ -1,138 +1,87 @@
-# 𓂀 ANUBIS — LUMINARK Portfolio Intelligence Platform
-**Version 5.0.0 | Powered by LUMINARK v8.2.0 (Tumbling Inversion Principle)**
+# ANUBIS — 0-9-0 Portfolio and Market-Analysis Prototype
 
-> *"ANUBIS doesn't just tell you where your portfolio is. It tells you where it's going, whether it's lying to itself, and what happens if it keeps going the way it's going."*
+**Status: experimental software prototype. No patent application has been filed.**
 
-Copyright © 2024-2026 Richard L. Stanfield | Meridian Axiom Alignment Technologies (MAAT)
-**Status: experimental prototype. No patent application has been filed.**
+ANUBIS is a FastAPI application that applies the project's 0-9-0 / Stanfield's Axiom of Perpetuity framework to user-supplied portfolio, market, and system metrics. It is a rule-based classification and journaling/analysis prototype—not a production-grade portfolio platform, brokerage integration, investment adviser, or validated forecasting system.
 
----
+## Conceptual origin and implementation
 
-## What ANUBIS Does
+The project owner states that the underlying 0-9-0 framework, ANUBIS concept, and ideas for its applications originated with him. AI systems generated the implementation code and suggested supporting technical mechanisms. NSDT and the Container Rule are AI-added implementation mechanisms within the owner's framework, not independent conceptual origins.
 
-ANUBIS is a production-grade portfolio intelligence and compliance platform built on the **LUMINARK dual-engine architecture** with **v8.2.0 Tumbling Inversion Principle**:
+This records the project owner's account; it is not a legal determination of copyright ownership, inventorship, or exclusive rights. Third-party dependencies, submodule licenses, AI-service terms, and code provenance require separate review before commercial transfer or licensing.
 
-- **LUMINARK OVERWATCH PRIME ULTRA** — Infrastructure intelligence, stage physics, economic classification
-- **LUMINARK CONSCIOUSNESS ENGINE OMEGA** — Behavioral intelligence, consciousness mapping, ethical validation
+## What the current code does
 
-**Key v8.2.0 Features:**
-- **Conductor's Paradox (Stage 6):** Detects when peak harmony seeds its own undoing
-- **Individuation Crucible (Stage 7):** Recognizes conscious distillation vs. chaotic collapse
-- **Crystallization Paradox (Stage 8):** Identifies Illusion of Permanence (1.45× amplifier) and dissolution vs. shattering trajectories
+The FastAPI application imports the LUMINARK engine from the `luminark-engine` Git submodule and exposes these endpoints:
 
-ANUBIS applies these engines to financial portfolios, trading behavior, and market conditions. It answers questions that standard portfolio tools cannot:
-
-- *Where is this position in its development cycle — and is it lying about itself?*
-- *Is this portfolio approaching Stage 5 bifurcation (Middle Path Gateway)? What's the probability of ascending arc vs. descending arc?*
-- *Is the broader economy exhibiting Stage 8 Illusion of Permanence? Is the system approaching dissolution or shattering?*
-- *Is this position at a 3-6-9 critical gate where the Tumbling Inversion Principle changes everything?*
-
----
-
-## New in v4.0 — LUMINARK v8.2.0 Integration (Tumbling Inversion Principle)
-
-Six new endpoints powered by 3,700 lines of new LUMINARK math:
-
-| Endpoint | Capability |
+| Endpoint | Actual behavior |
 |---|---|
-| `POST /api/sar/bifurcation` | Stage 5 three-way probability: advance / regression / crisis |
-| `POST /api/nmap/classify` | NMAP Economic Classifier — Stage 0-9, Stage 8 Dual-Chamber Trap detection |
-| `POST /api/classify` | Full SAP stage classification with trap detection and unified field |
-| `POST /api/frequency` | Bio-resonance / acoustic frequency analysis via FrequencyAdapter |
-| `GET  /api/sar/stage_names` | Canonical SAP stage names reference |
+| `POST /api/classify` | Converts five supplied numeric inputs into an NSDT vector and calls the engine's rule-based stage analysis |
+| `POST /api/sar/bifurcation` | Applies a simple recalibration condition and returns fixed probability sets; these are programmed outputs, not statistically calibrated probabilities |
+| `POST /api/nmap/classify` | Converts six supplied economic indicators through fixed formulas, then classifies the resulting vector |
+| `POST /api/frequency` | Converts supplied frequency-related metrics through the engine's FrequencyAdapter; this is not a validated physiological or bio-resonance assessment |
+| `GET /api/sar/stage_names` | Returns the engine's stage-name registry |
+| `GET /api/health` | Returns application and engine status |
+| `GET /api/audit/recent` | Returns recent audit metadata; requires API authentication |
 
----
+The application stores request/response audit records in a local SQLite database. Audit storage is not encrypted by this application. Do not submit sensitive financial, personal, or client information to a public deployment without a privacy and security review.
 
-## Core Capabilities (All Versions)
+## Important limitations
 
-- **SAP 10-Stage Classification** — Every position assigned a stage (0-9) with confidence score
-- **NSDT 5-Vector Assessment** — complexity, stability, tension, adaptability, coherence
-- **TrapScore Engine** — Detects Stage 8 Illusion of Permanence (1.45× amplifier) and false breakout patterns
-- **Temporal State Tracking** — Session-level trajectory: stage_velocity, risk_momentum, crystallization_index
-- **Yunus Protocol** — Three-tier isolation: Partial (I<50%), Full (I<25%), Arc Disorientation (>70%)
-- **Harrowing Protocol** — Controlled dissolution for positions past Stage 8 (Crystallization Paradox) point of no return
-- **CITI Systemic Alert** — Cross-Indicator Tumbling Index — predicts cascade failure
-- **Trader Behavior Profiler** — 7-metric behavioral stage assessment
-- **Compliance & Overwatch** — Multi-platform rule enforcement, violation log, audit trail
-- **API Key Authentication** — Tiered access control (master / demo)
-- **SQLite Persistence** — Compliance data, alerts, full audit trail
+- No broker, exchange, custodian, payment network, or trading-platform integration is established by the current application.
+- No independent market, portfolio, economic, clinical, or infrastructure validation is established.
+- The bifurcation endpoint returns fixed rule-based probability values. They should not be interpreted as measured or calibrated probabilities.
+- Economic and frequency inputs are mapped through project-defined formulas. Their outputs are not validated economic forecasts or physiological measurements.
+- Stage classifications and TrapScore values are framework-based heuristics, not established predictors of returns, losses, defaults, or market events.
+- The application is not a substitute for licensed financial advice or professional risk controls.
+- The local SQLite audit database is not encrypted. Retention, access controls, backups, and deletion procedures require review before handling sensitive data.
 
----
+## Security configuration
 
-## API Access
+The application no longer ships with a default API key. Authenticated endpoints return HTTP 503 until a master key of at least 32 characters is configured. An optional demo key must also be at least 32 characters.
 
-```bash
-# Health check (no key required)
-curl https://your-deployment-url/api/health
-
-# Stage 5 bifurcation probability
-curl -X POST https://your-deployment-url/api/sar/bifurcation \
-  -H "X-ANUBIS-API-KEY: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{"gate": 4, "micro_stage": 0.8, "energy": 72, "integrity": 65, "maat": 80}'
-
-# NMAP economic classification
-curl -X POST https://your-deployment-url/api/nmap/classify \
-  -H "X-ANUBIS-API-KEY: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{"gdp_growth": 3.8, "unemployment": 3.6, "inflation": 4.1, "debt_to_gdp": 128, "asset_deviation_sd": 2.3, "credit_expansion": 17.5}'
-
-# Full API docs
-open https://your-deployment-url/api/docs
-```
-
----
-
-## Deployment
+Generate a key:
 
 ```bash
-pip install -r requirements.txt
-export ANUBIS_API_KEY="your-master-key"
-uvicorn app:app --host 0.0.0.0 --port 8000
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-Render.com: `render.yaml` is included for one-click deployment.
+Set the following environment variables before starting the service:
 
----
+- `ANUBIS_API_KEY` — required random secret, at least 32 characters
+- `ANUBIS_DEMO_KEY` — optional separate demo credential, at least 32 characters
+- `ANUBIS_CORS_ORIGINS` — optional comma-separated list of explicitly trusted browser origins; empty by default
+- `ANUBIS_ENGINE_PRESET` — engine preset; defaults to `industrial_strict`
+- `ANUBIS_DB_PATH` — SQLite path; defaults to `anubis_audit.db`
 
-## Architecture
+Do not expose the prototype publicly without TLS, secret management, database protection, rate-limit review, dependency review, and independent security testing.
 
-```
-ANUBIS v4.0
-├── Core Engine (7 Protected Modules)
-│   ├── NSDT Engine         — 5-vector stage classification
-│   ├── Stage Classifier    — SAP 0-9 assessment
-│   ├── TrapScore Engine    — Illusion of Permanence + false breakout detection
-│   ├── Temporal State      — trajectory tracking
-│   ├── Consensus Engine    — multi-evaluator confidence
-│   ├── Pattern Recurrence  — behavioral history analysis
-│   └── Alert Engine        — Harrowing + Yunus protocol triggers
-├── Domain Adapter (v5 additions)
-│   ├── SAR Math            — dm/dt formalization, gate names, flux dynamics
-│   ├── NMAP Classifier     — economic stage quantitative thresholds
-│   ├── Container Rule      — digit vessel analysis
-│   └── Arc Notation        — 4.5↓@L1 position encoding
-├── Application Layer
-│   ├── Stage 5 Bifurcation — 3-way sigmoid probability
-│   ├── 369 Resonance       — phase gate detection
-│   ├── Compliance Layer    — multi-platform rule enforcement
-│   └── Yunus/Harrowing     — isolation + disassembly protocols
-└── Interface Layer
-    ├── FastAPI REST API    — /api/docs for full schema
-    ├── React Frontend      — /static/index.html
-    └── SQLite Persistence  — compliance + audit trail
+## Local setup
+
+The engine is a Git submodule. Clone with submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/foreverforward760-crypto/Anubis090.git
+cd Anubis090
+python -m venv .venv
+# Windows: .venv\\Scripts\\activate
+# macOS/Linux: source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
----
+Configure the environment variables above, then run:
 
-## Intellectual Property
+```bash
+uvicorn app:app --host 127.0.0.1 --port 8000
+```
 
-ANUBIS is built on **Stanfield's Axiom of Perpetuity (SAP)** with the **Tumbling Inversion Principle** (v8.2.0) and the **Noctilucan Stage Development Theory (NSDT)** — proprietary frameworks developed by Richard L. Stanfield.
+The API documentation is available at `/docs` while the service is running. The static frontend is served by the application after API routes are registered.
 
-**Constitutional Directives:**
-- Stage names are canonical constants: PLENARA, SPARK OF NAVIGATION, FORGE OF POLARITY, ENGINE OF EXPRESSION, CRUCIBLE OF EQUILIBRIUM, DYNAMO OF WILL, NEXUS OF HARMONY, LENS OF DISTILLATION, VESSEL OF GROUNDING, TRANSPARENCY OF THE GUIDE
-- Even stages (2,4,6,8) are Physically Stable / Consciously Unstable
-- Odd stages (1,3,5,7,9) are Physically Unstable / Consciously Stable
-- Stage 8 Dual-Chamber Trap: Chamber A = Illusion of Arrival (False Heaven — rigidity, false completion); Chamber B = Illusion of Permanence (False Hell — illusion suffering will never end). Amplifier: 1.45×
+## Verification status
 
-Commercial licensing: [info.rstanfield@gmail.com](mailto:info.rstanfield@gmail.com)
+The repository includes the LUMINARK engine test suite as a submodule and ANUBIS-specific security tests. Passing software tests confirms only the tested code paths. It does not establish predictive performance, investment value, security certification, production readiness, or customer outcomes.
+
+## Commercial status
+
+The most defensible current description is an experimental framework-based analytics prototype. A commercial offering would require a defined customer problem, validated data sources, tested integrations, documented performance against baselines, security/privacy review, and independent domain review.
