@@ -4,7 +4,7 @@
 > *"ANUBIS doesn't just tell you where your portfolio is. It tells you where it's going, whether it's lying to itself, and what happens if it keeps going the way it's going."*
 
 Copyright © 2024-2026 Richard L. Stanfield | Meridian Axiom Alignment Technologies (MAAT)
-**Patent Pending — USPTO (Application filed March 2026) | All Rights Reserved**
+**Status: experimental prototype. No patent application has been filed.**
 
 ---
 
