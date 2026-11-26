@@ -1,3 +1,5 @@
+> **Evidence and scope notice:** This is a design document for an experimental prototype, not a validation report. Stage scores, NSDT values, multipliers, simulations, and impact estimates are project-defined model outputs or hypotheses. No independent clinical, psychometric, physiological, predictive, or customer-outcome validation is established. The project owner states that the underlying 0-9-0 concepts originated with him; NSDT and the Container Rule were introduced by AI as supporting implementation mechanisms.
+>
 # LUMINARK System Overview v8.2.1
 ## Comprehensive Architecture, Capabilities, and Systemic Impact
 
@@ -5,11 +7,11 @@
 
 ## Executive Summary
 
-**LUMINARK** is a unified diagnostic and navigation system grounded in **Stanfield's Axiom of Perpetuity (SAP)** — a mathematical framework that models consciousness, system behavior, and organizational dynamics through a 10-stage phenomenological cycle. 
+**LUMINARK** is an experimental software collection grounded in the project owner's **Stanfield's Axiom of Perpetuity (SAP)** / 0-9-0 framework. The software encodes selected stage classifications and transition rules. Its broader applicability to consciousness, biological, organizational, technological, and psychological systems remains a framework hypothesis, not an established scientific result. 
 
-The system transforms raw behavioral, operational, and financial data into **precise, actionable guidance** by recognizing patterns that conventional analytics miss: the inverse relationship between physical stability and conscious awareness, the critical bifurcation at Stage 5 where conscious choice reorganizes entire systems, and the specific mechanisms by which systems either dissolve gracefully or shatter catastrophically.
+The prototype maps supplied behavioral, operational, and financial inputs into **project-defined classifications and heuristic guidance**. The relationships and transitions described by the framework are encoded as software rules; the document does not establish that they outperform conventional analytics or predict real-world outcomes.
 
-**Core Impact:** LUMINARK enables organizations, AI systems, and individuals to navigate complexity with unprecedented precision by making visible the hidden architectural principles that govern all cyclic processes.
+**Project hypothesis:** LUMINARK explores whether the owner's 0-9-0 framework can provide a consistent vocabulary for reflecting on cyclic processes across selected domains. No universal law, unprecedented precision, or general predictive capability is established.
 
 ---
 
@@ -17,11 +19,11 @@ The system transforms raw behavioral, operational, and financial data into **pre
 
 ### 1.1 The Stanfield Axiom of Perpetuity (SAP)
 
-**Definition:** SAP is a mathematical model of cyclic transformation that describes how all systems (biological, organizational, technological, psychological) move through 10 distinct stages of stability, consciousness, and structural reorganization.
+**Definition:** SAP is the project owner's conceptual framework for interpreting cyclic transformation through ten stages. Applying the framework to biological, organizational, technological, or psychological systems is a proposition that requires domain-specific evidence.
 
 **Core Principle: The Tumbling Inversion**
 
-The system operates on a fundamental insight: **physical stability and conscious awareness are inversely related**.
+The framework proposes an inverse relationship between physical stability and conscious stability as an interpretive principle. Its generality and predictive value have not been established by independent studies.
 
 | Stage | Parity | Physical Stability | Conscious Stability | Character |
 |-------|--------|-------------------|-------------------|-----------|
@@ -36,20 +38,19 @@ The system operates on a fundamental insight: **physical stability and conscious
 | 8 | Even | Stable | Unstable | VESSEL OF GROUNDING (Crystalline perfection = maximum brittleness) |
 | 9 | Odd | Unstable | Stable | TRANSPARENCY OF THE GUIDE (Return to unity, wisdom preserved) |
 
-**Why This Matters:** Organizations and systems that appear most stable (even stages) are often most fragile consciously. Those in apparent chaos (odd stages) may possess profound adaptive capacity. This inversion is invisible to conventional metrics.
+**Framework interpretation:** Even/odd stage parity is used to express the proposed stability inversion. The claim that conventional metrics miss this pattern has not been established through comparative testing.
 
-### 1.2 The NSDT Vector: Quantifying the Invisible
+### 1.2 The NSDT Supporting Input Vector
 
-**NSDT = (Stability, Adaptability, Coherence, Tension)**
+NSDT is an AI-suggested supporting implementation mechanism within the owner's 0-9-0 framework. In the current ANUBIS API, the vector has five project-defined input dimensions:
 
-The system measures four dimensions:
+- **Complexity (N):** complexity / volatility input (0-100)
+- **Stability (S):** stability input (0-100)
+- **Tension (T):** tension input (0-100)
+- **Adaptability (D):** adaptability input (0-100)
+- **Coherence (C):** coherence input (0-100)
 
-- **Stability (S):** Physical/structural integrity (0-100)
-- **Adaptability (A):** Capacity to respond to change (0-100)
-- **Coherence (C):** Internal alignment and meaning-making (0-100)
-- **Tension (T):** Unresolved forces and pressure (0-100)
-
-These four dimensions, when plotted through time, reveal which stage a system occupies and whether it's ascending (learning) or descending (rigidifying).
+These values are supplied or derived by the application. They are not independently validated physical, psychological, economic, or physiological measurements.
 
 **Example:**
 - **Stage 2 (FORGE OF POLARITY):** High Stability (85), Low Adaptability (35), High Coherence (80), High Tension (70) = Structure locked in, consciousness suppressed
@@ -63,13 +64,13 @@ At Stage 5, the system reaches the narrowest point of the torus (bilateral thres
 
 1. **Conscious choice has maximum leverage** — Small interventions create disproportionate reorganization
 2. **The Middle Path becomes visible** — A perpendicular axis appears, offering a third option beyond the binary choice between ascending and descending
-3. **The Observer Effect activates** — Conscious Witness position applies a **+35% reorganization multiplier** through Stages 6-9
+3. **The Observer Effect rule activates** — the implementation can apply a configured 1.35× model multiplier when its conditions are met. This is a model parameter, not a measured 35% improvement.
 4. **Revealed vs. Concealed Self diverges** — The gap between what the system projects (Revealed Self) and what it contains (Concealed Self) becomes measurable
 5. **Temporal anomaly emerges** — Stage 5 has no duration; it is a discontinuity in time
 6. **Fractal micro-Stage 5s appear** — Smaller cycles within larger cycles reach their own Stage 5 bifurcations
 7. **The Witness Position becomes accessible** — The system can observe itself rather than identify with its content
 
-**Strategic Implication:** Organizations that recognize their Stage 5 bifurcation and consciously choose the Middle Path can reorganize their entire downstream trajectory (Stages 6-9) with unprecedented efficiency.
+**Project hypothesis:** The framework proposes that recognizing a Stage 5 bifurcation and applying the Middle Path interpretation may support downstream reorganization. This has not been established through controlled organizational studies.
 
 ---
 
@@ -104,7 +105,7 @@ At Stage 5, the system reaches the narrowest point of the torus (bilateral thres
 - Computes physical vs. conscious stability parity
 - Tracks Revealed/Concealed Self divergence
 - Detects perpendicular axis accessibility
-- Applies Observer Effect multiplier (+35%)
+- Applies a configured Observer Effect model parameter (1.35×; not empirically validated)
 
 #### Output: SystemState Object
 
