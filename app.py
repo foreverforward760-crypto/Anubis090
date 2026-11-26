@@ -25,8 +25,13 @@ from luminark import EngineFactory, NSDTBuilder, SAPStage
 from luminark.sap_types import SystemState
 
 # --- Configuration ---
-API_KEY      = os.getenv("ANUBIS_API_KEY",     "demo-key-change-me")
-DEMO_KEY     = os.getenv("ANUBIS_DEMO_KEY",    "demo-public")
+API_KEY       = os.getenv("ANUBIS_API_KEY")
+DEMO_KEY      = os.getenv("ANUBIS_DEMO_KEY")
+CORS_ORIGINS  = [
+    origin.strip()
+    for origin in os.getenv("ANUBIS_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
 ENGINE_PRESET = os.getenv("ANUBIS_ENGINE_PRESET", "industrial_strict")
 DB_PATH      = os.getenv("ANUBIS_DB_PATH",     "anubis_audit.db")
 
@@ -50,19 +55,31 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-ANUBIS-API-KEY"],
 )
 
-# Serve static frontend
-if os.path.exists("static"):
-    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# The static frontend is mounted after API route registration at the end of
+# this file. Mounting "/" here would shadow API endpoints declared below.
 
 
 # --- Auth Dependency ---
 def verify_api_key(x_anubis_api_key: Optional[str] = Header(None)):
-    if x_anubis_api_key not in (API_KEY, DEMO_KEY):
+    # Do not run with a built-in demo credential or silently allow an unset key.
+    if not API_KEY or len(API_KEY) < 32:
+        raise HTTPException(
+            status_code=503,
+            detail="API authentication is not configured. Set ANUBIS_API_KEY to a random secret of at least 32 characters.",
+        )
+    if DEMO_KEY and len(DEMO_KEY) < 32:
+        raise HTTPException(
+            status_code=503,
+            detail="ANUBIS_DEMO_KEY must be at least 32 characters when configured.",
+        )
+
+    valid_keys = {key for key in (API_KEY, DEMO_KEY) if key}
+    if not x_anubis_api_key or x_anubis_api_key not in valid_keys:
         raise HTTPException(status_code=401, detail="Invalid API key")
     return x_anubis_api_key
 
@@ -346,3 +363,10 @@ async def recent_audit(request: Request, limit: int = 20, api_key: str = Depends
         }
         for r in rows
     ]
+
+
+# Register the catch-all static frontend only after API routes have been
+# registered, so /api/* and FastAPI documentation routes remain reachable.
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(STATIC_DIR):
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
