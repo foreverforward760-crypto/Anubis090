@@ -5,6 +5,7 @@ Author: Richard Stanfield, MAAT
 """
 
 import os
+import secrets
 import sys
 import sqlite3
 import uuid
@@ -27,6 +28,7 @@ from luminark.sap_types import SystemState
 # --- Configuration ---
 API_KEY       = os.getenv("ANUBIS_API_KEY")
 DEMO_KEY      = os.getenv("ANUBIS_DEMO_KEY")
+ENVIRONMENT   = os.getenv("ANUBIS_ENVIRONMENT", "development").lower()
 CORS_ORIGINS  = [
     origin.strip()
     for origin in os.getenv("ANUBIS_CORS_ORIGINS", "").split(",")
@@ -77,9 +79,18 @@ def verify_api_key(x_anubis_api_key: Optional[str] = Header(None)):
             status_code=503,
             detail="ANUBIS_DEMO_KEY must be at least 32 characters when configured.",
         )
+    if ENVIRONMENT == "production" and DEMO_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="ANUBIS_DEMO_KEY is disabled in production.",
+        )
 
-    valid_keys = {key for key in (API_KEY, DEMO_KEY) if key}
-    if not x_anubis_api_key or x_anubis_api_key not in valid_keys:
+    valid_keys = [API_KEY]
+    if ENVIRONMENT != "production" and DEMO_KEY:
+        valid_keys.append(DEMO_KEY)
+    if not x_anubis_api_key or not any(
+        secrets.compare_digest(x_anubis_api_key, key) for key in valid_keys
+    ):
         raise HTTPException(status_code=401, detail="Invalid API key")
     return x_anubis_api_key
 
