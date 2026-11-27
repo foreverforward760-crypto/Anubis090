@@ -53,3 +53,11 @@ def test_api_routes_are_registered_before_root_static_mount():
     # Some repository snapshots have no static directory, so there may be
     # no root mount at all. If present, it must follow the API route.
     assert not root_mount_indices or api_index < root_mount_indices[0]
+
+
+def test_demo_key_is_rejected_in_production(monkeypatch):
+    monkeypatch.setattr(anubis, "ENVIRONMENT", "production")
+    monkeypatch.setattr(anubis, "DEMO_KEY", "b" * 40)
+    with pytest.raises(HTTPException) as exc:
+        anubis.verify_api_key("a" * 40)
+    assert exc.value.status_code == 503
