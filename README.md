@@ -38,7 +38,7 @@ The application stores request/response audit records in a local SQLite database
 
 ## Security configuration
 
-The application no longer ships with a default API key. Authenticated endpoints return HTTP 503 until a master key of at least 32 characters is configured. An optional demo key must also be at least 32 characters.
+The application no longer ships with a default API key. Authenticated endpoints return HTTP 503 until a master key of at least 32 characters is configured. An optional development demo key must also be at least 32 characters and is rejected when `ANUBIS_ENVIRONMENT=production`.
 
 Generate a key:
 
@@ -48,6 +48,7 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 Set the following environment variables before starting the service:
 
+- `ANUBIS_ENVIRONMENT` — `development` or `production`
 - `ANUBIS_API_KEY` — required random secret, at least 32 characters
 - `ANUBIS_DEMO_KEY` — optional separate demo credential, at least 32 characters
 - `ANUBIS_CORS_ORIGINS` — optional comma-separated list of explicitly trusted browser origins; empty by default
