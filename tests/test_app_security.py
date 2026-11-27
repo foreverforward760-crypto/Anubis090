@@ -46,8 +46,10 @@ def test_api_routes_are_registered_before_root_static_mount():
         i for i, route in enumerate(anubis.app.routes)
         if getattr(route, "path", None) == "/api/classify"
     )
-    root_mount_index = next(
+    root_mount_indices = [
         i for i, route in enumerate(anubis.app.routes)
         if isinstance(route, Mount) and route.path == "/"
-    )
-    assert api_index < root_mount_index
+    ]
+    # Some repository snapshots have no static directory, so there may be
+    # no root mount at all. If present, it must follow the API route.
+    assert not root_mount_indices or api_index < root_mount_indices[0]
